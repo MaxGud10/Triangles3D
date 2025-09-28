@@ -26,5 +26,5 @@ int main()
       if (check_intersection(input[i], input[j]))
         std::cout << "Intersect\n";
     }
-  } 
+  }
 }
