@@ -17,7 +17,7 @@ public:
         return !std::isnan(x) && !std::isnan(y) && !std::isnan(z);
     }
     
-    
+
     PointTy get_x() const { return x; }
     PointTy get_y() const { return y; }
     PointTy get_z() const { return z; }
@@ -25,7 +25,7 @@ public:
     
     Point() = default; // мб убрать потом 
 
-    Point(PointTy x, PointTy y, PointTyz) : x(x), y(y), z(z) {};
+    Point(PointTy x, PointTy y, PointTy z) : x(x), y(y), z(z) {};
 
     void print() const 
     {

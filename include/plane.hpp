@@ -7,12 +7,19 @@
 #include "point.hpp"
 #include "vector.hpp"
 
-template <typename PointTy = double> class Plane {
-  PointTy A, B, C, D = NAN;
+template <typename PointTy = double> 
+class Plane 
+{
+  PointTy A = NAN;
+  PointTy B = NAN;
+  PointTy C = NAN;
+  PointTy D = NAN;
+
   PointTy normal_length = NAN;
   Vector<PointTy> normal;
 
-  void normalize_plane() {
+  void normalize_plane() 
+  {
     normal_length = std::sqrt(A * A + B * B + C * C);
 
     A = A / normal_length;
@@ -27,20 +34,18 @@ public:
   {
     A = (b.get_y() - a.get_y()) * (c.get_z() - a.get_z()) -
         (b.get_z() - a.get_z()) * (c.get_y() - a.get_y());
-
     B = (b.get_z() - a.get_z()) * (c.get_x() - a.get_x()) -
         (b.get_x() - a.get_x()) * (c.get_z() - a.get_z());
-
     C = (b.get_x() - a.get_x()) * (c.get_y() - a.get_y()) -
         (b.get_y() - a.get_y()) * (c.get_x() - a.get_x());
 
     D = -(A * a.get_x() + B * a.get_y() + C * a.get_z());
 
-    normalize_plane();
-
     normal.x = A;
     normal.y = B;
     normal.z = C;
+
+    normalize_plane();
   }
 
   Plane(const PointTy &x1, const PointTy &y1, const PointTy &z1,
@@ -50,8 +55,11 @@ public:
     A = (y2 - y1) * (z3 - z1) - (z2 - z1) * (y3 - y1);
     B = (z2 - z1) * (x3 - x1) - (x2 - x1) * (z3 - z1);
     C = (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1);
-
     D = -(A * x1 + B * y1 + C * z1);
+
+    normal.x = A;
+    normal.y = B;
+    normal.z = C;
 
     normalize_plane();
   }
@@ -79,8 +87,8 @@ public:
   bool operator==(const Plane<PointTy> &other) const 
   {
     // Проверка на совпадени плоскостей с точностью до знака
-    if ((double_cmp(A, other.A ) && double_cmp(B, other.B ) &&
-         double_cmp(C, other.C ) && double_cmp(D, other.D )) ||
+    if ((double_cmp( A, other.A) && double_cmp( B, other.B) &&
+         double_cmp( C, other.C) && double_cmp( D, other.D)) ||
         (double_cmp(-A, other.A) && double_cmp(-B, other.B) &&
          double_cmp(-C, other.C) && double_cmp(-D, other.D))) 
     {
@@ -94,15 +102,16 @@ public:
   PointTy get_B() const { return B; }
   PointTy get_C() const { return C; }
   PointTy get_D() const { return D; }
+
   Vector<PointTy> get_normal() const { return normal; }
 };
 
 template <typename PointTy = double>
 PointTy planes_are_parallel(const Plane<PointTy> &plane1, const Plane<PointTy> &plane2) 
 {
-  if ((double_cmp(plane1.get_A (), plane2.get_A()) &&
-       double_cmp(plane1.get_B (), plane2.get_B()) &&
-       double_cmp(plane1.get_C (), plane2.get_C())) ||
+  if ((double_cmp( plane1.get_A(), plane2.get_A()) &&
+       double_cmp( plane1.get_B(), plane2.get_B()) &&
+       double_cmp( plane1.get_C(), plane2.get_C())) ||
       (double_cmp(-plane1.get_A(), plane2.get_A()) &&
        double_cmp(-plane1.get_B(), plane2.get_B()) &&
        double_cmp(-plane1.get_C(), plane2.get_C()))) 
@@ -111,4 +120,55 @@ PointTy planes_are_parallel(const Plane<PointTy> &plane1, const Plane<PointTy> &
   }
 
   return false;
+}
+
+template <typename PointTy = double>
+Vector<PointTy> get_planes_intersection_vector(const Plane<PointTy> &plane1, const Plane<PointTy> &plane2) 
+{
+  Vector vec = cross(plane1.get_normal(), plane2.get_normal());
+
+  return vec;
+}
+
+template <typename PointTy = double>
+Point<PointTy> get_planes_intersection_point(const Plane<PointTy> &plane1, const Plane<PointTy> &plane2) 
+{
+  PointTy x = NAN;
+  PointTy y = NAN; 
+  PointTy z = NAN;
+
+  PointTy determinant_x_zero = plane1.get_B() * plane2.get_C() - plane1.get_C() * plane2.get_B();
+  PointTy determinant_y_zero = plane1.get_A() * plane2.get_C() - plane1.get_C() * plane2.get_A();
+  PointTy determinant_z_zero = plane1.get_A() * plane2.get_B() - plane1.get_B() * plane2.get_A();
+
+  // A1x + B1y = -D1
+  // A2x + B2y = -D2
+  if (!double_cmp(determinant_z_zero, 0.0)) 
+  {
+    x = (plane1.get_B() * plane2.get_D() - plane2.get_B() * plane1.get_D()) / determinant_z_zero;
+    y = (plane2.get_A() * plane1.get_D() - plane1.get_A() * plane2.get_D()) / determinant_z_zero;
+    z = 0.0;
+  }
+
+  // A1x + С1z = -D1
+  // A2x + С2z = -D2
+  else if (!double_cmp(determinant_y_zero, 0.0)) 
+  {
+    x = (plane1.get_C() * plane2.get_D() - plane2.get_C() * plane1.get_D()) / determinant_y_zero;
+    z = (plane2.get_A() * plane1.get_D() - plane1.get_A() * plane2.get_D()) / determinant_y_zero;
+    y = 0.0;
+  }
+
+  // B1y + С1z = -D1
+  // B2y + С2z = -D2
+  else if (!double_cmp(determinant_x_zero, 0.0)) 
+  {
+    y = (plane1.get_C() * plane2.get_D() - plane2.get_C() * plane1.get_D()) / determinant_x_zero;
+    z = (plane2.get_B() * plane1.get_D() - plane1.get_B() * plane2.get_D()) / determinant_x_zero;
+    x = 0.0;
+  }
+
+  Point<PointTy> intersectionPoint = {x, y, z};
+  
+  return intersectionPoint;
 }
