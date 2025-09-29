@@ -28,7 +28,7 @@ private:
       return;
     }
 
-    else if (a == b || b == c || a == c) 
+    else if (a == b || b == c || a == c || three_points_on_one_line(a, b, c)) 
     {
       type = LINE;
       return;
@@ -360,8 +360,10 @@ bool intersect_line_with_line(const Triangle<PointTy> t1, const Triangle<PointTy
 //   return false;
 // }
 
-template <typename PointTy = double> // !
-bool check_if_inter_point_belongs_sides(const Point<PointTy> &a1, const Point<PointTy> &b1, const Point<PointTy> &a2, const Point<PointTy> &b2, const Point<PointTy> &point) 
+template <typename PointTy = double>
+bool check_if_inter_point_belongs_sides(const Point<PointTy> &a1, const Point<PointTy> &b1,
+                                        const Point<PointTy> &a2, const Point<PointTy> &b2,
+                                        const Point<PointTy> &point) 
 {
   if (!point.valid())
     return false;
@@ -372,19 +374,28 @@ bool check_if_inter_point_belongs_sides(const Point<PointTy> &a1, const Point<Po
   return check_if_inter_point_belongs_space(min1, max1, min2, max2, point);
 }
 
-template <typename PointTy = double> // х
+template <typename PointTy = double>
 bool check_if_inter_point_belongs_space(const Point<PointTy> &min1, const Point<PointTy> &max1, const Point<PointTy> &min2, const Point<PointTy> &max2, const Point<PointTy> &point) 
 {
   auto is_within_bounds = [](const Point<PointTy> &min,
                              const Point<PointTy> &max,
                              const Point<PointTy> &pt) 
   {
-    return (pt.get_x() >= min.get_x() && pt.get_x() <= max.get_x()) &&
-           (pt.get_y() >= min.get_y() && pt.get_y() <= max.get_y()) &&
-           (pt.get_z() >= min.get_z() && pt.get_z() <= max.get_z());
+    return (pt.get_x() >= min.get_x() && pt.get_x() <= max.get_x() ||
+            (double_cmp(pt.get_x(), min.get_x())   &&
+             double_cmp(pt.get_x(), max.get_x()))) &&
+
+           (pt.get_y() >= min.get_y() && pt.get_y() <= max.get_y() ||
+            (double_cmp(pt.get_y(), min.get_y()) &&
+             double_cmp(pt.get_y(), max.get_y()))) &&
+
+           (pt.get_z() >= min.get_z() && pt.get_z() <= max.get_z() ||
+            (double_cmp(pt.get_z(), min.get_z()) &&
+             double_cmp(pt.get_z(), max.get_z())));
   };
 
-  return is_within_bounds(min1, max1, point) && is_within_bounds(min2, max2, point);
+  return is_within_bounds(min1, max1, point) &&
+         is_within_bounds(min2, max2, point);
 }
 
 
@@ -449,39 +460,3 @@ get_segment_space(const Point<PointTy> a, const Point<PointTy> b)
 
   return std::make_pair(min_vector, max_vector);
 }
-
-// template <typename PointTy = double>
-// bool intersect_triangle_with_line(Triangle<PointTy> t1, Triangle<PointTy> t2) 
-// {
-//   Line<PointTy> line1{vector_from_point(t1.get_b() - t1.get_a()), t1.get_a()};
-//   Line<PointTy> line2{vector_from_point(t1.get_c() - t1.get_a()), t1.get_a()};
-//   Line<PointTy> line3{vector_from_point(t1.get_c() - t1.get_b()), t1.get_b()};
-
-//   Line<PointTy> line {vector_from_point(t2.get_b() - t2.get_a()), t2.get_a()};
- 
-//   Point<PointTy> point1 = intersect_line_with_line(line, line1);
-//   point1.print();
-
-
-//   // if (check_if_inter_point_belongs_side(t1.get_a(), t1.get_b(), point1, t2_a, t2_b)) 
-//   // {
-//   //   return true;
-//   // }
-
-//   // else 
-//   // {
-//   //   Point<PointTy> point2 = intersect_line_with_line(line, line2);
-//   //   if (check_if_inter_point_belongs_side(t1.get_a(), t1.get_c(), point2, t2_a, t2_b)) 
-//   //   {
-//   //     return true;
-//   //   }
-
-//   //   Point<PointTy> point3 = intersect_line_with_line(line, line3);
-//   //   if (check_if_inter_point_belongs_side(t1.get_b(), t1.get_c(), point3,
-//   //   t2_a,
-//   //                                         t2_b))
-//   //     return true;
-//   // }
-
-//   return true;
-// }

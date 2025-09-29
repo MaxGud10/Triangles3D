@@ -73,6 +73,22 @@ public:
     }
 };
 
+template <typename PointTy = double>
+bool three_points_on_one_line(const Point<PointTy> &a, const Point<PointTy> &b, const Point<PointTy> &c) 
+{
+  Vector<PointTy> AB{b, a};
+  Vector<PointTy> AC{c, a};
+  Vector<PointTy> cross_res = cross(AB, AC);
+
+  if (double_cmp(cross_res.x, 0.0) && double_cmp(cross_res.y, 0.0) &&
+      double_cmp(cross_res.z, 0.0)) 
+  {
+    return true;
+  }
+
+  return false;
+}
+
 // находится ли точка внутри треугольника
 template <typename PointTy = double>
 bool is_point_in_triangle(const Triangle<PointTy> t, const Point<PointTy> p) 
