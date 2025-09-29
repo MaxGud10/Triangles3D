@@ -37,7 +37,7 @@ public:
     }
 
 
-    PointTy norm() const { return x * x + y * y + z * z; }
+    PointTy norm() const { return x * x + y * y + z * z; } // |p|^2
 
     bool operator==(const Point<PointTy> &other) const 
     {
@@ -73,7 +73,7 @@ public:
     }
 };
 
-
+// находится ли точка внутри треугольника
 template <typename PointTy = double>
 bool is_point_in_triangle(const Triangle<PointTy> t, const Point<PointTy> p) 
 {

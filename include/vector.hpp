@@ -81,15 +81,9 @@ public:
     y = other.y;
     z = other.z;
   }
-
-  void operator=(const Point<PointTy> &other) 
-  {
-    x = other.x;
-    y = other.y;
-    z = other.z;
-  }
 };
 
+// v·w = x1x2 + y1y2 + z1z2.
 template <typename PointTy = double>
 PointTy dot(const Vector<PointTy> &vector1, const Vector<PointTy> &vector2) 
 {
@@ -121,6 +115,7 @@ Vector<PointTy> cross(const Vector<PointTy> &vector1, const Vector<PointTy> &vec
   return vector;
 }
 
+// v×w = (y1z2 − z1y2, z1x2 − x1z2, x1y2 − y1x2).
 template <typename PointTy = double>
 Vector<PointTy> cross(const Vector<PointTy> &vector, const Point<PointTy> &point) 
 {

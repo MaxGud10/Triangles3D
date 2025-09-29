@@ -10,7 +10,7 @@
 template <typename PointTy = double> 
 class Plane 
 {
-  PointTy A = NAN;
+  PointTy A = NAN; // Ax + By + Cz + D = 0.
   PointTy B = NAN;
   PointTy C = NAN;
   PointTy D = NAN;
@@ -45,7 +45,7 @@ public:
     normal.y = B;
     normal.z = C;
 
-    normalize_plane();
+    normalize_plane(); // ‖A,B,C‖ = 1
   }
 
   Plane(const PointTy &x1, const PointTy &y1, const PointTy &z1,
@@ -86,7 +86,7 @@ public:
 
   bool operator==(const Plane<PointTy> &other) const 
   {
-    // Проверка на совпадени плоскостей с точностью до знака
+    // проверим на совпадени плоскостей с точностью до знака
     if ((double_cmp( A, other.A) && double_cmp( B, other.B) &&
          double_cmp( C, other.C) && double_cmp( D, other.D)) ||
         (double_cmp(-A, other.A) && double_cmp(-B, other.B) &&
@@ -116,12 +116,13 @@ PointTy planes_are_parallel(const Plane<PointTy> &plane1, const Plane<PointTy> &
        double_cmp(-plane1.get_B(), plane2.get_B()) &&
        double_cmp(-plane1.get_C(), plane2.get_C()))) 
   {
-    return true;
+    return true; // A1,B1,C1) ~= +-(A2,B2,C2)
   }
 
   return false;
 }
 
+// направление линии пересечения двух не паралельных плоскостей
 template <typename PointTy = double>
 Vector<PointTy> get_planes_intersection_vector(const Plane<PointTy> &plane1, const Plane<PointTy> &plane2) 
 {
@@ -169,6 +170,6 @@ Point<PointTy> get_planes_intersection_point(const Plane<PointTy> &plane1, const
   }
 
   Point<PointTy> intersectionPoint = {x, y, z};
-  
+
   return intersectionPoint;
 }

@@ -65,7 +65,6 @@ public:
   Triangle(const Point<PointTy> &p1, const Point<PointTy> &p2, const Point<PointTy> &p3)
          : a(p1),                    b(p2),                    c(p3) 
   {
-
     if (a.norm() <= b.norm()) 
     {
       std::swap(a, b);
@@ -157,9 +156,10 @@ bool intersect_triangle_with_triangle_in_3D(Triangle<PointTy> &t1, Triangle<Poin
   Plane<PointTy> plane1(t1.get_a(), t1.get_b(), t1.get_c());
   Plane<PointTy> plane2(t2.get_a(), t2.get_b(), t2.get_c());
 
-  // Проверим плоскости на совпадение
+  // проверим плоскости на совпадение
   if (planes_are_parallel(plane1, plane2)) 
   {
+    // коплонарны ли они
     if (( plane1.get_D() == plane2.get_D()) ||
         (-plane1.get_D() == plane2.get_D())) 
     {
@@ -169,7 +169,7 @@ bool intersect_triangle_with_triangle_in_3D(Triangle<PointTy> &t1, Triangle<Poin
     return false;
   }
 
-  // Если все знаковые расстояния от вершин Т2 до треугольника Т1 одного знака,
+  // если все знаковые расстояния от вершин Т2 до треугольника Т1 одного знака,
   // значит треугольники не пересекаются
   PointTy signed_dist11 = plane1.substitute(t2.get_a());
   PointTy signed_dist21 = plane1.substitute(t2.get_b());
@@ -180,7 +180,7 @@ bool intersect_triangle_with_triangle_in_3D(Triangle<PointTy> &t1, Triangle<Poin
     return false;
   }
 
-  // Если все знаковые расстояния от вершин Т1 до треугольника Т2 одного знака,
+  // если все знаковые расстояния от вершин Т1 до треугольника Т2 одного знака,
   // значит треугольники не пересекаются
   PointTy signed_dist12 = plane2.substitute(t1.get_a());
   PointTy signed_dist22 = plane2.substitute(t1.get_b());
@@ -191,11 +191,11 @@ bool intersect_triangle_with_triangle_in_3D(Triangle<PointTy> &t1, Triangle<Poin
     return false;
   }
 
-  // Тогда проверим на пересечение. Найдем прямую пересечения двух плоскостей
+  // тогда проверим на пересечение. Найдем прямую пересечения двух плоскостей
   Line<PointTy> inter_line{get_planes_intersection_vector(plane1, plane2),
                            get_planes_intersection_point (plane1, plane2)};
 
-  // Найдем интервалы пересечения треугольников с прямой пересечения плоскостей
+  // найдем интервалы пересечения треугольников с прямой пересечения плоскостей
   Interval interval1 = get_interval_of_triangle_and_line(inter_line, t1);
   Interval interval2 = get_interval_of_triangle_and_line(inter_line, t2);
   if (!interval1.valid() || !interval2.valid()) 
@@ -203,8 +203,8 @@ bool intersect_triangle_with_triangle_in_3D(Triangle<PointTy> &t1, Triangle<Poin
     return false;
   }
 
-  // Проверим, пересекаются ли интервалы.
-  return intersect_inervals(interval1, interval2);
+  // проверим, пересекаются ли интервалы.
+  return intersect_intervals(interval1, interval2);
 }
 
 template <typename PointTy = double>
@@ -247,13 +247,13 @@ bool intersect_triangle_with_triangle_in_2D(Triangle<PointTy> &t1, Triangle<Poin
 template <typename PointTy = double>
 bool intersect_triangle_with_line_in_3D(const Triangle<PointTy> &t1, const Triangle<PointTy> &t2) 
 {
-  Line<PointTy> line = get_line_from_triangle(t2);
+  Line<PointTy> line = get_line_from_triangle(t2); // из вырожденного треугольника получаем отрезок
 
   Vector<PointTy> e1 = vector_from_point(t1.get_b() - t1.get_a());
   Vector<PointTy> e2 = vector_from_point(t1.get_c() - t1.get_a());
 
-  Vector<PointTy> p = cross(line.vector, e2);
-  PointTy det = dot(p, e1);
+  Vector<PointTy> p  = cross(line.vector, e2);
+         PointTy det = dot(p, e1);
 
   if (double_cmp(det, 0.0)) 
   {
@@ -261,12 +261,12 @@ bool intersect_triangle_with_line_in_3D(const Triangle<PointTy> &t1, const Trian
   }
 
   Vector<PointTy> s = vector_from_point(line.point - t1.get_a());
-  PointTy u = dot(s, p) / det;
+         PointTy  u = dot(s, p) / det;
   if (u < 0.0 || u > 1.0)
     return false;
 
   Vector<PointTy> q = cross(s, e1);
-  PointTy v = dot(line.vector, q) / det;
+        PointTy   v = dot(line.vector, q) / det;
   if (v < 0.0 || v > 1.0)
     return false;
 
@@ -285,7 +285,6 @@ bool intersect_triangle_with_point(const Triangle<PointTy> t1, const Triangle<Po
 {
   return is_point_in_triangle(t1, t2.get_a());
 }
-
 
 template <typename PointTy = double>
 bool check_two_segments_intersection(const PointTy &min1, const PointTy &max1,
@@ -361,7 +360,7 @@ bool intersect_line_with_line(const Triangle<PointTy> t1, const Triangle<PointTy
 //   return false;
 // }
 
-template <typename PointTy = double>
+template <typename PointTy = double> // !
 bool check_if_inter_point_belongs_sides(const Point<PointTy> &a1, const Point<PointTy> &b1, const Point<PointTy> &a2, const Point<PointTy> &b2, const Point<PointTy> &point) 
 {
   if (!point.valid())
@@ -373,7 +372,7 @@ bool check_if_inter_point_belongs_sides(const Point<PointTy> &a1, const Point<Po
   return check_if_inter_point_belongs_space(min1, max1, min2, max2, point);
 }
 
-template <typename PointTy = double>
+template <typename PointTy = double> // х
 bool check_if_inter_point_belongs_space(const Point<PointTy> &min1, const Point<PointTy> &max1, const Point<PointTy> &min2, const Point<PointTy> &max2, const Point<PointTy> &point) 
 {
   auto is_within_bounds = [](const Point<PointTy> &min,

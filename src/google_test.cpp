@@ -620,7 +620,7 @@ TEST(LineWithLine, Intersection_3) {
   Triangle t1{t1p1, t1p2, t1p3};
   Triangle t2{t2p1, t2p2, t2p3};
 
-  ASSERT_TRUE(intersect_line_with_line(t1, t2));
+  ASSERT_TRUE(intersect_line_with_line(t1, t2)); 
 }
 
 TEST(LineWithLine, Intersection_4) {

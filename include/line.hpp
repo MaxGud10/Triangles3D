@@ -8,11 +8,11 @@ template <typename PointTy = double>
 class Line 
 {
 public:
-  Vector<PointTy> vector;
-  Point<PointTy>  point;
+  Vector<PointTy> vector; // направляющий вектор
+  Point<PointTy>  point;  // опорная точка P0 на линии
 
   Line() = default;
-  Line(Vector<PointTy> v, Point<PointTy> p) : vector(v), point(p) {}
+  Line(Vector<PointTy> v, Point<PointTy> p) : vector(v), point(p) {} // L(t) = P0 + t * d, где P0 = point, d = vector, t — вещественное число
 
   bool valid() const { return vector.valid() && point.valid(); }
 
@@ -24,6 +24,7 @@ public:
   }
 };
 
+// лежит ли точка на прямой
 template <typename PointTy = double>
 bool is_point_on_line(Point<PointTy> &point, Line<PointTy> &line) 
 {
@@ -37,6 +38,8 @@ bool is_point_on_line(Point<PointTy> &point, Line<PointTy> &line)
   return false;
 }
 
+
+// сравниваем две прямые 
 template <typename PointTy = double>
 bool equal(Line<PointTy> &line1, Line<PointTy> &line2) 
 {
@@ -52,7 +55,7 @@ bool equal(Line<PointTy> &line1, Line<PointTy> &line2)
 }
 
 
-// inter_line = P0 + s*d0; line = P1 + t*d1
+// inter_line = P0 + s*d0; line = P1 + t*d1 [in 3D]
 template <typename PointTy = double>
 Point<PointTy> intersect_line_with_line(const Line<PointTy> &line1, const Line<PointTy> &line2) 
 {
@@ -66,18 +69,18 @@ Point<PointTy> intersect_line_with_line(const Line<PointTy> &line1, const Line<P
   PointTy F = dot(line1.point - line2.point,  line1.point - line2.point);
 
   PointTy denom = A * C - B * B;
-  if (double_cmp(denom, 0.0)) // Parallel lines
+  if (double_cmp(denom, 0.0)) // parallel lines
     return point;
 
-  // Nonparallel lines
+  // непараллельные прямые
   PointTy s = (B * E - C * D) / denom;
   PointTy t = (B * D - A * E) / denom;
 
   PointTy dist = s * (A * s + B * t + 2 * D) + t * (B * s + C * t + 2 * E) + F;
-  if (!double_cmp(dist, 0.0)) // Lines are not on one plane
+  if (!double_cmp(dist, 0.0)) // прямые не находятся в одной плоскости
     return point;
 
-  // Lines on one plane
+  // линии на одной плоскости
   point = {-line2.vector.x * t + line2.point.get_x(),
            -line2.vector.y * t + line2.point.get_y(),
            -line2.vector.z * t + line2.point.get_z()};
@@ -85,6 +88,7 @@ Point<PointTy> intersect_line_with_line(const Line<PointTy> &line1, const Line<P
   return point;
 }
 
+// находим саму линию (точку и напрявляющий вектор) из треугольника который выродился в линию
 template <typename PointTy = double>
 Line<PointTy> get_line_from_triangle(const Triangle<PointTy> t) 
 {
@@ -95,17 +99,17 @@ Line<PointTy> get_line_from_triangle(const Triangle<PointTy> t)
 
   if (t.get_a() == t.get_b()) 
   {
-    line.vector = vector_from_point(t.get_c() - t.get_a());
+    line.vector = vector_from_point(t.get_c() - t.get_a()); // напрвл вект d = c - a, P0 = a
     line.point  = t.get_a();
   } 
 
   else if (t.get_a() == t.get_c()) 
   {
-    line.vector = vector_from_point(t.get_b() - t.get_a());
+    line.vector = vector_from_point(t.get_b() - t.get_a()); // d = b − a, P0 = a
     line.point  = t.get_a();
   } 
 
-  else 
+  else // b == c
   {
     line.vector = vector_from_point(t.get_c() - t.get_a());
     line.point  = t.get_a();
@@ -114,6 +118,7 @@ Line<PointTy> get_line_from_triangle(const Triangle<PointTy> t)
   return line;
 }
 
+// лежит ли точка на прямой
 template <typename PointTy = double>
 bool intersect_line_with_point(const Triangle<PointTy> t1, const Triangle<PointTy> t2) 
 {

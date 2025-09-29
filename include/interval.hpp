@@ -10,8 +10,8 @@ template <typename PointTy> class Triangle;
 template <typename PointTy = double> 
 class Interval 
 {
-    Point<PointTy> p1;
-    Point<PointTy> p2;
+    Point<PointTy> p1; // первая точка интервала
+    Point<PointTy> p2; // вторая точка интервала 
 
 public:
     Interval() = default;
@@ -40,7 +40,7 @@ public:
 };
 
 template <typename PointTy = double>
-bool intersect_inervals(Interval<PointTy> &interval1, Interval<PointTy> &interval2) 
+bool intersect_intervals(Interval<PointTy> &interval1, Interval<PointTy> &interval2) 
 {
     PointTy int1_min = std::min(interval1.get_p1().get_x(), interval1.get_p2().get_x());
     PointTy int1_max = std::max(interval1.get_p1().get_x(), interval1.get_p2().get_x());
@@ -50,7 +50,7 @@ bool intersect_inervals(Interval<PointTy> &interval1, Interval<PointTy> &interva
     if (double_cmp(int1_min, int2_min) || double_cmp(int1_min, int2_max) ||
         double_cmp(int1_max, int2_min) || double_cmp(int1_max, int2_max)) 
     {
-            return true;
+        return true; 
     }
 
     if ((int1_min >= int2_min && int1_min <= int2_max) ||
@@ -68,6 +68,7 @@ Interval<PointTy> get_valid_interval_of_triangle_and_line(const Triangle<PointTy
 {
     std::vector<Point<PointTy>> valid_points;
 
+    // проверим внутри ли точка треугольника 
     if (is_point_in_triangle(triangle, inter_point1))
         valid_points.push_back(inter_point1);
 
@@ -77,16 +78,20 @@ Interval<PointTy> get_valid_interval_of_triangle_and_line(const Triangle<PointTy
     if (is_point_in_triangle(triangle, inter_point3))
         valid_points.push_back(inter_point3);
 
+    // значит у нас линия прошла через две стороны треугольника
     if (valid_points.size() == 2) 
     {
         return Interval<PointTy>{valid_points[0], valid_points[1]};
     } 
 
+    // если одна точка оказалась вершиной треугольника
     else if (valid_points.size() == 3) 
     {
+        // // если первые две одинаковые → значит интервал задаётся первой и третьей
         if (valid_points[0] == valid_points[1])
             return Interval<PointTy>{valid_points[0], valid_points[2]};
-            
+
+        // если третья совпадает с одной из первых → интервал задаётся первыми двумя
         if ((valid_points[0] == valid_points[2]) ||
             (valid_points[1] == valid_points[2]))
             return Interval<PointTy>{valid_points[0], valid_points[1]};
