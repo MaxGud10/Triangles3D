@@ -27,8 +27,11 @@ jobs:
 
       - name: Install deps
         run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake ninja-build ccache python3
+            sudo apt-get update
+            sudo apt-get install -y cmake ninja-build ccache python3 libgtest-dev
+            # Собираем GoogleTest (он ставится без .so)
+            sudo cmake -S /usr/src/googletest -B /usr/src/googletest/build
+            sudo cmake --build /usr/src/googletest/build --target install
 
       - name: Set compiler
         run: |
