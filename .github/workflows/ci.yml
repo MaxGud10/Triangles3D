@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# быстрее сборки благодаря cache + ccache
+env:
+  CCACHE_DIR: ${{ github.workspace }}/.ccache
+  CTEST_OUTPUT_ON_FAILURE: 1
+
+jobs:
+  build-test:
+    name: Build & Test (${{ matrix.compiler }} • ${{ matrix.build_type }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+        build_type: [Release, Debug]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build ccache python3
+
+      - name: Set compiler
+        run: |
+          if [ "${{ matrix.compiler }}" = "gcc" ]; then
+            echo "CC=gcc"   >> $GITHUB_ENV
+            echo "CXX=g++"  >> $GITHUB_ENV
+          else
+            echo "CC=clang" >> $GITHUB_ENV
+            echo "CXX=clang++" >> $GITHUB_ENV
+          fi
+
+      - name: Restore ccache
+        uses: actions/cache@v4
+        with:
+          path: .ccache
+          key: ccache-${{ runner.os }}-${{ matrix.compiler }}-${{ matrix.build_type }}-${{ hashFiles('**/CMakeLists.txt', '**/*.hpp', '**/*.cpp') }}
+          restore-keys: |
+            ccache-${{ runner.os }}-${{ matrix.compiler }}-${{ matrix.build_type }}-
+
+      - name: Configure (CMake)
+        run: |
+          cmake -S . -B build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+
+      - name: Build
+        run: cmake --build build --config ${{ matrix.build_type }} -j 2
+
+      - name: List tests
+        run: |
+          if [ -f build/google_test ]; then ./build/google_test --gtest_list_tests || true; fi
+
+      - name: Run unit tests (ctest)
+        working-directory: build
+        run: ctest --output-on-failure -j 2
+
+      - name: Run end-to-end (if present)
+        if: ${{ hashFiles('end2end/run_e2e_tests.py') != '' }}
+        run: |
+          python3 end2end/run_e2e_tests.py || (echo "::warning::e2e failed"; exit 1)
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-${{ matrix.compiler }}-${{ matrix.build_type }}
+          path: |
+            build/Testing/Temporary/LastTest.log
+            build/CTestTestfile.cmake
+            build/CMakeCache.txt
+
+  sanitizers:
+    name: ASan+UBSan (gcc, Debug)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build g++ ccache
+      - run: |
+          cmake -S . -B build-san -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" \
+            -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+      - run: cmake --build build-san -j 2
+      - run: ctest --test-dir build-san --output-on-failure
