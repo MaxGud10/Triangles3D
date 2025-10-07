@@ -92,7 +92,9 @@ jobs:
       - uses: actions/checkout@v4
       - run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build g++ ccache
+          sudo apt-get install -y cmake ninja-build g++ ccache libgtest-dev
+          sudo cmake -S /usr/src/googletest -B /usr/src/googletest/build
+          sudo cmake --build /usr/src/googletest/build --target install
       - run: |
           cmake -S . -B build-san -G Ninja \
             -DCMAKE_BUILD_TYPE=Debug \
