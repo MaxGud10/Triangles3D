@@ -159,37 +159,43 @@ bool intersect_triangle_with_triangle_in_3D(Triangle<PointTy> &t1, Triangle<Poin
   // проверим плоскости на совпадение
   if (planes_are_parallel(plane1, plane2)) 
   {
-    // коплонарны ли они
-    if (( plane1.get_D() == plane2.get_D()) ||
-        (-plane1.get_D() == plane2.get_D())) 
+    // коллинерны ли они 
+    if (double_cmp( plane1.get_D(), plane2.get_D()) || 
+        double_cmp(-plane1.get_D(), plane2.get_D()))
     {
       return intersect_triangle_with_triangle_in_2D(t1, t2);
     }
-
     return false;
   }
+
+  // расстояния вершин до плоскостей
+  auto same_strict_sign = [](PointTy x, PointTy y, PointTy z) 
+  {
+    auto pos = [](PointTy v) { return v > 0.0 && !double_cmp(v, 0.0); };
+    auto neg = [](PointTy v) { return v < 0.0 && !double_cmp(v, 0.0); };
+
+    bool all_pos = pos(x) && pos(y) && pos(z);
+    bool all_neg = neg(x) && neg(y) && neg(z);
+
+    return all_pos || all_neg;
+  };
 
   // если все знаковые расстояния от вершин Т2 до треугольника Т1 одного знака,
   // значит треугольники не пересекаются
   PointTy signed_dist11 = plane1.substitute(t2.get_a());
   PointTy signed_dist21 = plane1.substitute(t2.get_b());
   PointTy signed_dist31 = plane1.substitute(t2.get_c());
-  if ((signed_dist11 < 0 && signed_dist21 < 0 && signed_dist31 < 0) ||
-      (signed_dist11 > 0 && signed_dist21 > 0 && signed_dist31 > 0)) 
-  {
+  if (same_strict_sign(signed_dist11, signed_dist21, signed_dist31))
     return false;
-  }
 
   // если все знаковые расстояния от вершин Т1 до треугольника Т2 одного знака,
   // значит треугольники не пересекаются
   PointTy signed_dist12 = plane2.substitute(t1.get_a());
   PointTy signed_dist22 = plane2.substitute(t1.get_b());
   PointTy signed_dist32 = plane2.substitute(t1.get_c());
-  if ((signed_dist12 < 0 && signed_dist22 < 0 && signed_dist32 < 0) ||
-      (signed_dist12 > 0 && signed_dist22 > 0 && signed_dist32 > 0)) 
-  {
+  if (same_strict_sign(signed_dist12, signed_dist22, signed_dist32))
     return false;
-  }
+
 
   // тогда проверим на пересечение. Найдем прямую пересечения двух плоскостей
   Line<PointTy> inter_line{get_planes_intersection_vector(plane1, plane2),
@@ -226,23 +232,130 @@ Interval<PointTy> get_interval_of_triangle_and_line(const Line<PointTy> &inter_l
 template <typename PointTy = double>
 bool intersect_triangle_with_triangle_in_2D(Triangle<PointTy> &t1, Triangle<PointTy> &t2) 
 {
-  Line<PointTy> line1{vector_from_point(t2.get_b() - t2.get_a()), t2.get_a()};
-  Line<PointTy> line2{vector_from_point(t2.get_c() - t2.get_a()), t2.get_a()};
-  Line<PointTy> line3{vector_from_point(t2.get_c() - t2.get_b()), t2.get_b()};
+  Plane<PointTy> plane(t1.get_a(), t1.get_b(), t1.get_c()); // постоили пл-ть оп t1
 
-  Point<PointTy> a = t2.get_a();
-  Point<PointTy> b = t2.get_b();
-  Point<PointTy> c = t2.get_c();
+  // выберем какую координату исключим, чтобы рабоать в двумерных координатах
+  int excluded_axis_index = 2;     
 
-  if (intersect_triangle_with_segment_in_2D(t1, line1, a, b) ||
-      intersect_triangle_with_segment_in_2D(t1, line2, a, c) ||
-      intersect_triangle_with_segment_in_2D(t1, line3, b, c)) 
+  PointTy absA = std::fabs(plane.get_A()); // |A|
+  PointTy absB = std::fabs(plane.get_B()); // |B|
+  PointTy absC = std::fabs(plane.get_C()); // |C|
+
+  // наибольшая по модулю компонента нормали указывает ось, которую выгоднее исключить
+  if (absA >= absB && absA >= absC) 
+    excluded_axis_index = 0; // работаем с парами (y,z)
+
+  else if (absB >= absA && absB >= absC) 
+    excluded_axis_index = 1; // работаем с парами (x,z)
+   
+  else 
+    excluded_axis_index = 2; // // работаем с парами (x,y)
+
+
+  auto project_point_to_2d = [excluded_axis_index](const Point<PointTy>& p)->std::pair<double,double>
   {
-    return true;
-  }
+    if (excluded_axis_index == 0)  return { (double)p.get_y(), (double)p.get_z() }; // (y, z)
+    if (excluded_axis_index == 1)  return { (double)p.get_x(), (double)p.get_z() }; // (x, z)
+    /* excluded_axis_index == 2 */ return { (double)p.get_x(), (double)p.get_y() }; // (x, y)
+  };
 
-  return false;
+  // проецируем вершины обоих треугольников в 2D
+  std::pair<double,double> a1 = project_point_to_2d(t1.get_a());
+  std::pair<double,double> b1 = project_point_to_2d(t1.get_b());
+  std::pair<double,double> c1 = project_point_to_2d(t1.get_c());
+
+  std::pair<double,double> a2 = project_point_to_2d(t2.get_a());
+  std::pair<double,double> b2 = project_point_to_2d(t2.get_b());
+  std::pair<double,double> c2 = project_point_to_2d(t2.get_c());
+
+  // ориентация площади в 2D
+  auto oriented_area_2d = [](double ax,double ay,double bx, double by,double cx,double cy)
+  {
+    // >0 — слева от направленного AB; <0 — справа; =0 — коллинеарны
+    return (bx-ax)*(cy-ay) - (by-ay)*(cx-ax);
+  };
+
+  // проверим лежит ли наша точка P на отрезке AB
+  auto point_lies_on_segment_2d = [](double ax,double ay,double bx,double by,double px,double py)
+  {
+    double area = (bx-ax)*(py-ay) - (by-ay)*(px-ax);
+    if (!double_cmp(area, 0.0)) 
+      return false; // не коллинеарны 
+
+    double minx = std::min(ax,bx), maxx = std::max(ax,bx);
+    double miny = std::min(ay,by), maxy = std::max(ay,by);
+
+    return (px >= minx && px <= maxx && py >= miny && py <= maxy);
+  };
+
+  // перечение двух торезков AB и CD в 2D
+  auto segments_intersect_2d = [&](double ax,double ay,double bx,double by,
+                                   double cx,double cy,double dx,double dy)
+  {
+    double o1 = oriented_area_2d(ax,ay,bx,by,cx,cy);
+    double o2 = oriented_area_2d(ax,ay,bx,by,dx,dy);
+    double o3 = oriented_area_2d(cx,cy,dx,dy,ax,ay);
+    double o4 = oriented_area_2d(cx,cy,dx,dy,bx,by);
+
+    bool sep1 = (o1 > 0.0 && o2 < 0.0) || (o1 < 0.0 && o2 > 0.0);
+    bool sep2 = (o3 > 0.0 && o4 < 0.0) || (o3 < 0.0 && o4 > 0.0);
+
+    if (sep1 && sep2) return true; // отрезки пересекаются в общем положении
+
+    // частные случаи: касание/совпадение — через проверку принадлежности концов отрезкам.
+    if (point_lies_on_segment_2d(ax,ay,bx,by,cx,cy)) return true;
+    if (point_lies_on_segment_2d(ax,ay,bx,by,dx,dy)) return true;
+    if (point_lies_on_segment_2d(cx,cy,dx,dy,ax,ay)) return true;
+    if (point_lies_on_segment_2d(cx,cy,dx,dy,bx,by)) return true;
+
+    return false;
+  };
+
+  // проверия, что точка P=(px,py) внутри/на границе треугольника ABC в 2D
+  // то есть если все ориентированные площади относительно ребер ABC имеют один и тот же знак или 0
+  auto point_inside_triangle_2d = [&](double px, double py,
+                                      const std::pair<double,double>& A,
+                                      const std::pair<double,double>& B,
+                                      const std::pair<double,double>& C)
+  {
+    double o1 = oriented_area_2d(A.first,A.second,B.first,B.second,px,py);
+    double o2 = oriented_area_2d(B.first,B.second,C.first,C.second,px,py);
+    double o3 = oriented_area_2d(C.first,C.second,A.first,A.second,px,py);
+
+    bool pos1 = o1 > 0.0 && !double_cmp(o1,0.0);
+    bool pos2 = o2 > 0.0 && !double_cmp(o2,0.0);
+    bool pos3 = o3 > 0.0 && !double_cmp(o3,0.0);
+    bool neg1 = o1 < 0.0 && !double_cmp(o1,0.0);
+    bool neg2 = o2 < 0.0 && !double_cmp(o2,0.0);
+    bool neg3 = o3 < 0.0 && !double_cmp(o3,0.0);
+
+    bool has_pos = pos1 || pos2 || pos3;
+    bool has_neg = neg1 || neg2 || neg3;
+
+    // если есть строго отрицательные и строго положительные => точка вне
+    return !(has_pos && has_neg);
+  };
+
+  // проверка пересечения ребер 
+  if (segments_intersect_2d(a1.first,a1.second, b1.first,b1.second, a2.first,a2.second, b2.first,b2.second)) return true;
+  if (segments_intersect_2d(a1.first,a1.second, b1.first,b1.second, b2.first,b2.second, c2.first,c2.second)) return true;
+  if (segments_intersect_2d(a1.first,a1.second, b1.first,b1.second, c2.first,c2.second, a2.first,a2.second)) return true;
+
+  if (segments_intersect_2d(b1.first,b1.second, c1.first,c1.second, a2.first,a2.second, b2.first,b2.second)) return true;
+  if (segments_intersect_2d(b1.first,b1.second, c1.first,c1.second, b2.first,b2.second, c2.first,c2.second)) return true;
+  if (segments_intersect_2d(b1.first,b1.second, c1.first,c1.second, c2.first,c2.second, a2.first,a2.second)) return true;
+
+  if (segments_intersect_2d(c1.first,c1.second, a1.first,a1.second, a2.first,a2.second, b2.first,b2.second)) return true;
+  if (segments_intersect_2d(c1.first,c1.second, a1.first,a1.second, b2.first,b2.second, c2.first,c2.second)) return true;
+  if (segments_intersect_2d(c1.first,c1.second, a1.first,a1.second, c2.first,c2.second, a2.first,a2.second)) return true;
+
+  // проверим вложенность, то есть вершина одного треуг. внутри или на границе другого
+  if (point_inside_triangle_2d(a1.first,a1.second, a2,b2,c2)) return true;
+  if (point_inside_triangle_2d(a2.first,a2.second, a1,b1,c1)) return true;
+
+  return false; // нет пересения 
 }
+
 
 template <typename PointTy = double>
 bool intersect_triangle_with_line_in_3D(const Triangle<PointTy> &t1, const Triangle<PointTy> &t2) 
@@ -257,7 +370,15 @@ bool intersect_triangle_with_line_in_3D(const Triangle<PointTy> &t1, const Trian
 
   if (double_cmp(det, 0.0)) 
   {
-    return intersect_triangle_with_segment_in_2D(t1, line, get_triangle_space(t2).first, get_triangle_space(t2).second);
+    // берем две разные точки вырожденного треугольника t2 как концы сегмента
+    Point<PointTy> p = t2.get_a();
+    Point<PointTy> q = t2.get_b();
+
+    // если первые две совпали
+    if (p == q) 
+      q = t2.get_c(); 
+
+    return intersect_triangle_with_segment_in_2D(t1, line, p, q);
   }
 
   Vector<PointTy> s = vector_from_point(line.point - t1.get_a());
