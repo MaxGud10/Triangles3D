@@ -750,6 +750,94 @@ TEST(PointWithPoint, Intersection_2) {
 }
 
 
+// --- cases from test1.txt-like snippet (four triangles on z = 0, 0.1, 0.2, 0.3) ---
+
+TEST(TriangleWithTriangle, FromTxt_ParallelPlanes_1) {
+  // z = 0
+  Point a1{-2.392, 3.14, 0.0};
+  Point b1{ 0.588, 1.608, 0.0};
+  Point c1{ 0.0,  -1.764, 0.0};
+  Triangle t1{a1, b1, c1};
+
+  // z = 0.1
+  Point a2{-1.164, 1.028, 0.1};
+  Point b2{ 1.624, 3.952, 0.1};
+  Point c2{ 0.0,  -2.208, 0.1};
+  Triangle t2{a2, b2, c2};
+
+  // параллельные, разные плоскости → пересечения нет
+  ASSERT_FALSE(intersect_triangle_with_triangle_in_3D(t1, t2));
+}
+
+TEST(TriangleWithTriangle, FromTxt_ParallelPlanes_2) {
+  // z = 0.1
+  Point a2{-1.164, 1.028, 0.1};
+  Point b2{ 1.624, 3.952, 0.1};
+  Point c2{ 0.0,  -2.208, 0.1};
+  Triangle t2{a2, b2, c2};
+
+  // z = 0.2
+  Point a3{-0.612, 2.16, 0.2};
+  Point b3{ 0.376, 2.856, 0.2};
+  Point c3{ 0.0, -3.976, 0.2};
+  Triangle t3{a3, b3, c3};
+
+  ASSERT_FALSE(intersect_triangle_with_triangle_in_3D(t2, t3));
+}
+
+TEST(TriangleWithTriangle, FromTxt_ParallelPlanes_3) {
+  // z = 0.2
+  Point a3{-0.612, 2.16, 0.2};
+  Point b3{ 0.376, 2.856, 0.2};
+  Point c3{ 0.0, -3.976, 0.2};
+  Triangle t3{a3, b3, c3};
+
+  // z = 0.3
+  Point a4{-3.584, 3.488, 0.3};
+  Point b4{ 0.824, 2.268, 0.3};
+  Point c4{ 0.0, -1.792, 0.3};
+  Triangle t4{a4, b4, c4};
+
+  ASSERT_FALSE(intersect_triangle_with_triangle_in_3D(t3, t4));
+}
+
+TEST(TriangleWithTriangle, FromTxt_ParallelPlanes_NonAdjacent) {
+  // z = 0
+  Point a1{-2.392, 3.14, 0.0};
+  Point b1{ 0.588, 1.608, 0.0};
+  Point c1{ 0.0,  -1.764, 0.0};
+  Triangle t1{a1, b1, c1};
+
+  // z = 0.3
+  Point a4{-3.584, 3.488, 0.3};
+  Point b4{ 0.824, 2.268, 0.3};
+  Point c4{ 0.0, -1.792, 0.3};
+  Triangle t4{a4, b4, c4};
+
+  ASSERT_FALSE(intersect_triangle_with_triangle_in_3D(t1, t4));
+}
+
+// инвариант к перестановке вершин (должно давать тот же результат)
+TEST(TriangleWithTriangle, FromTxt_ParallelPlanes_PermutationInvariant) {
+  // z = 0
+  Triangle t1{
+    Point{-2.392, 3.14, 0.0},
+    Point{ 0.588, 1.608, 0.0},
+    Point{ 0.0,  -1.764, 0.0}
+  };
+
+  // z = 0.1 (переставим вершины)
+  Triangle t2{
+    Point{ 1.624, 3.952, 0.1},
+    Point{ 0.0,  -2.208, 0.1},
+    Point{-1.164, 1.028, 0.1}
+  };
+
+  ASSERT_FALSE(intersect_triangle_with_triangle_in_3D(t1, t2));
+}
+
+
+
 int main(int argc, char **argv) 
 {
   ::testing::InitGoogleTest(&argc, argv);
