@@ -58,6 +58,12 @@ public:
     return sub;
   }
 
+  Vector<PointTy> operator/(const PointTy scalar) const 
+  {
+    Vector<PointTy> scalar_div(x / scalar, y / scalar, z / scalar);
+    return scalar_div;
+  }
+
   Vector<PointTy> operator*(const PointTy scalar) const 
   {
     Vector<PointTy> scalar_mul(x * scalar, y * scalar, z * scalar);

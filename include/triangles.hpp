@@ -11,6 +11,7 @@ class Triangle
 {
 public:
   enum TriangleType { NONE, POINT, LINE, TRIANGLE };
+  size_t id = 0;
 
 private:
   TriangleType type = NONE;
