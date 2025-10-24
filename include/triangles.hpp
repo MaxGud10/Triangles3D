@@ -91,11 +91,18 @@ public:
     c.print();
   }
 
-  Point<PointTy> get_a   () const { return a;    }
-  Point<PointTy> get_b   () const { return b;    }
-  Point<PointTy> get_c   () const { return c;    }
+  Point<PointTy> get_a() const { return a; }
+  Point<PointTy> get_b() const { return b; }
+  Point<PointTy> get_c() const { return c; }
 
-  TriangleType   get_type() const { return type; }
+  PointTy min_x() const { return std::min(a.get_x(), std::min(b.get_x(), c.get_x())); }
+  PointTy max_x() const { return std::max(a.get_x(), std::max(b.get_x(), c.get_x())); }
+  PointTy min_y() const { return std::min(a.get_y(), std::min(b.get_y(), c.get_y())); }
+  PointTy max_y() const { return std::max(a.get_y(), std::max(b.get_y(), c.get_y())); }
+  PointTy min_z() const { return std::min(a.get_z(), std::min(b.get_z(), c.get_z())); }
+  PointTy max_z() const { return std::max(a.get_z(), std::max(b.get_z(), c.get_z())); }
+
+  TriangleType get_type() const { return type; }
 };
 
 template <typename PointTy = double>
