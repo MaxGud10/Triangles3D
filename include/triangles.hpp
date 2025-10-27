@@ -422,11 +422,11 @@ bool check_two_segments_intersection(const PointTy &min1, const PointTy &max1,
   if (max1 < min2 || min1 > max2)
     return false;
 
-  if (double_cmp(min1, min2) && double_cmp(min1, max1) &&
-      double_cmp(min1, max2))
-  {
-    return false;
-  }
+  // if (double_cmp(min1, min2) && double_cmp(min1, max1) &&
+  //     double_cmp(min1, max2))
+  // {
+  //   return false;
+  // }
 
   return true;
 }
