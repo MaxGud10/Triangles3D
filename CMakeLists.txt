@@ -13,7 +13,7 @@ add_executable(triag src/main.cpp src/config.cpp)
 enable_testing()
 
 find_package(GTest REQUIRED)
-add_executable(google_test src/google_test.cpp)
+add_executable(google_test src/google_test.cpp src/config.cpp)
 target_link_libraries(google_test GTest::gtest_main)
 
 add_test(NAME google_test COMMAND google_test)

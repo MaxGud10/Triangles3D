@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iomanip>
+
 #include "interval.hpp"
 #include "line.hpp"
 #include "plane.hpp"
@@ -105,6 +107,29 @@ public:
   TriangleType get_type() const { return type; }
 };
 
+
+static void dbg_point(const char* name, const Point<double>& p) {
+  if (!g_debug) return;
+  std::cerr << name << " = (" << std::setprecision(12)
+            << p.get_x() << ", " << p.get_y() << ", " << p.get_z() << ")\n";
+}
+
+static void dbg_interval(const char* name, const Point<double>& p1, const Point<double>& p2) {
+  if (!g_debug) return;
+  std::cerr << name << " = [" 
+            << p1.get_x() << ", " << p1.get_y() << ", " << p1.get_z() << "]  —  ["
+            << p2.get_x() << ", " << p2.get_y() << ", " << p2.get_z() << "]\n";
+}
+
+static void dbg_tri(const char* tag, const Triangle<double>& t) {
+  if (!g_debug) return;
+  std::cerr << tag << " (id=" << t.id << ")\n";
+  dbg_point("  A", t.get_a());
+  dbg_point("  B", t.get_b());
+  dbg_point("  C", t.get_c());
+}
+
+
 template <typename PointTy = double>
 bool check_intersection(Triangle<PointTy> &t1, Triangle<PointTy> &t2) 
 {
@@ -161,6 +186,12 @@ bool check_intersection(Triangle<PointTy> &t1, Triangle<PointTy> &t2)
 template <typename PointTy = double>
 bool intersect_triangle_with_triangle_in_3D(Triangle<PointTy> &t1, Triangle<PointTy> &t2) 
 {
+  if (g_debug) {
+    std::cerr << "\n--- intersect_triangle_with_triangle_in_3D ---\n";
+    dbg_tri("T1", *(Triangle<double>*)&t1);
+    dbg_tri("T2", *(Triangle<double>*)&t2);
+  }
+
   Plane<PointTy> plane1(t1.get_a(), t1.get_b(), t1.get_c());
   Plane<PointTy> plane2(t2.get_a(), t2.get_b(), t2.get_c());
 
@@ -175,6 +206,15 @@ bool intersect_triangle_with_triangle_in_3D(Triangle<PointTy> &t1, Triangle<Poin
     }
     return false;
   }
+
+  if (g_debug) {
+  std::cerr << "plane1: A=" << plane1.get_A() << " B=" << plane1.get_B() 
+            << " C=" << plane1.get_C() << " D=" << plane1.get_D() << "\n";
+  std::cerr << "plane2: A=" << plane2.get_A() << " B=" << plane2.get_B() 
+            << " C=" << plane2.get_C() << " D=" << plane2.get_D() << "\n";
+  std::cerr << "planes_are_parallel? " << (planes_are_parallel(plane1, plane2) ? "YES" : "NO") << "\n";
+}
+
 
   // расстояния вершин до плоскостей
   auto same_strict_sign = [](PointTy x, PointTy y, PointTy z) 
@@ -196,6 +236,19 @@ bool intersect_triangle_with_triangle_in_3D(Triangle<PointTy> &t1, Triangle<Poin
   if (same_strict_sign(signed_dist11, signed_dist21, signed_dist31))
     return false;
 
+  if (g_debug) {
+    std::cerr << std::fixed << std::setprecision(12);
+    std::cerr << "signed distances of T2 to plane1: "
+              << plane1.substitute(t2.get_a()) << ", "
+              << plane1.substitute(t2.get_b()) << ", "
+              << plane1.substitute(t2.get_c()) << "\n";
+    std::cerr << "signed distances of T1 to plane2: "
+              << plane2.substitute(t1.get_a()) << ", "
+              << plane2.substitute(t1.get_b()) << ", "
+              << plane2.substitute(t1.get_c()) << "\n";
+  }
+
+
   // если все знаковые расстояния от вершин Т1 до треугольника Т2 одного знака,
   // значит треугольники не пересекаются
   PointTy signed_dist12 = plane2.substitute(t1.get_a());
@@ -209,12 +262,36 @@ bool intersect_triangle_with_triangle_in_3D(Triangle<PointTy> &t1, Triangle<Poin
   Line<PointTy> inter_line{get_planes_intersection_vector(plane1, plane2),
                            get_planes_intersection_point (plane1, plane2)};
 
+  if (g_debug) {
+    std::cerr << "inter_line: dir=(" 
+              << inter_line.vector.x << ", " << inter_line.vector.y << ", " << inter_line.vector.z
+              << "), point=("
+              << inter_line.point.get_x() << ", " << inter_line.point.get_y() << ", " << inter_line.point.get_z()
+              << ")\n";
+  }
+
   // найдем интервалы пересечения треугольников с прямой пересечения плоскостей
-  Interval interval1 = get_interval_of_triangle_and_line(inter_line, t1);
-  Interval interval2 = get_interval_of_triangle_and_line(inter_line, t2);
+  // Interval interval1 = get_interval_of_triangle_and_line(inter_line, t1);
+  // Interval interval2 = get_interval_of_triangle_and_line(inter_line, t2);
+  auto interval1 = get_interval_by_plane_clip(t1, plane2); // плоскость T2 режет треугольник T1
+  auto interval2 = get_interval_by_plane_clip(t2, plane1); // плоскость T1 режет треугольник T2
   if (!interval1.valid() || !interval2.valid()) 
   {
     return false;
+  }
+
+  if (g_debug) {
+    std::cerr << "interval1.valid? " << (interval1.valid() ? "YES" : "NO") << "\n";
+    if (interval1.valid()) dbg_interval("interval1", interval1.get_p1(), interval1.get_p2());
+    std::cerr << "interval2.valid? " << (interval2.valid() ? "YES" : "NO") << "\n";
+    if (interval2.valid()) dbg_interval("interval2", interval2.get_p1(), interval2.get_p2());
+  }
+
+
+  if (g_debug) {
+    bool inter = intersect_intervals(interval1, interval2);
+    std::cerr << "intersect_intervals? " << (inter ? "YES" : "NO") << "\n";
+    return inter;
   }
 
   // проверим, пересекаются ли интервалы.
@@ -232,7 +309,15 @@ Interval<PointTy> get_interval_of_triangle_and_line(const Line<PointTy> &inter_l
   Point<PointTy> inter_point2 = intersect_line_with_line(inter_line, line2);
   Point<PointTy> inter_point3 = intersect_line_with_line(inter_line, line3);
 
+  if (g_debug) {
+    std::cerr << "\n[get_interval_of_triangle_and_line]\n";
+    dbg_point("edge AB ∩ inter_line", inter_point1);
+    dbg_point("edge AC ∩ inter_line", inter_point2);
+    dbg_point("edge BC ∩ inter_line", inter_point3);
+  }
+
   Interval interval = get_valid_interval_of_triangle_and_line(triangle, inter_point1, inter_point2, inter_point3);
+
 
   return interval;
 }
@@ -422,11 +507,11 @@ bool check_two_segments_intersection(const PointTy &min1, const PointTy &max1,
   if (max1 < min2 || min1 > max2)
     return false;
 
-  // if (double_cmp(min1, min2) && double_cmp(min1, max1) &&
-  //     double_cmp(min1, max2))
-  // {
-  //   return false;
-  // }
+  if (double_cmp(min1, min2) && double_cmp(min1, max1) &&
+      double_cmp(min1, max2))
+  {
+    return false;
+  }
 
   return true;
 }
