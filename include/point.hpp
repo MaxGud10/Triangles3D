@@ -10,7 +10,6 @@ template <typename PointTy> class Vector;
 template <typename PointTy> class Plane;
 
 
-
 template <typename PointTy = double> 
 class Point
 {
@@ -77,8 +76,7 @@ public:
 };
 
 // ======================================================================
-#include "vector.hpp"
-#include "plane.hpp"
+
 
 // проверяем, что 3 точки лежит на одной прямой
 template <typename PointTy = double>
