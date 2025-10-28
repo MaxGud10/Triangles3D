@@ -2,6 +2,9 @@
 
 #include "point.hpp"
 
+namespace triangle 
+{
+
 template <typename PointTy = double> 
 class Vector 
 {
@@ -139,3 +142,5 @@ Vector<PointTy> vector_from_point(const Point<PointTy> &point)
 
   return vector;
 }
+
+} // namespace triangle

@@ -8,6 +8,9 @@
 
 #include "point.hpp"
 
+namespace triangle 
+{
+
 template <typename PointTy> class Triangle;
 
 template <typename PointTy = double> 
@@ -234,3 +237,5 @@ Interval<PointTy> get_interval_by_plane_clip(const Triangle<PointTy>& tri, const
 
     return interval_from_points(pts);
 }
+
+} // namespace triangle

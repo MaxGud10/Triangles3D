@@ -8,6 +8,9 @@
 #include "point.hpp"
 #include "vector.hpp"
 
+namespace triangle 
+{
+
 template <typename PointTy = double> 
 class Triangle 
 {
@@ -594,3 +597,5 @@ get_segment_space(const Point<PointTy> a, const Point<PointTy> b)
 
   return std::make_pair(min_vector, max_vector);
 }
+
+} // namespace triangle

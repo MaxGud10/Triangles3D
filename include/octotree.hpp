@@ -6,6 +6,9 @@
 
 #include "triangles.hpp"
 
+namespace triangle 
+{
+
 
 template <typename PointTy = double> 
 class BoundingBox 
@@ -191,3 +194,5 @@ public:
     }
   }
 };
+
+} // namespace triangle

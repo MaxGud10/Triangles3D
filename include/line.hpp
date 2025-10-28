@@ -4,6 +4,9 @@
 #include "point.hpp"
 #include "vector.hpp"
 
+namespace triangle 
+{
+
 template <typename PointTy = double> 
 class Line 
 {
@@ -134,3 +137,5 @@ bool intersect_line_with_point(const Triangle<PointTy> t1, const Triangle<PointT
 
   return false;
 }
+
+} // namespace triangle

@@ -6,7 +6,7 @@ int main()
 
   using PointTy = double;
 
-  std::list<Triangle<PointTy>> input;
+  std::list<triangle::Triangle<PointTy>> input;
   size_t triag_num = 0;
   std::cin >> triag_num;
 
@@ -18,21 +18,21 @@ int main()
 
     std::cin >> x1 >> y1 >> z1 >> x2 >> y2 >> z2 >> x3 >> y3 >> z3;
 
-    Triangle<PointTy> triangle(x1, y1, z1, x2, y2, z2, x3, y3, z3);
+    triangle::Triangle<PointTy> triangle(x1, y1, z1, x2, y2, z2, x3, y3, z3);
     triangle.id = i;
     input.push_back(triangle);
   }
 
-  Octotree<PointTy> octotree(input, triag_num);
+  triangle::Octotree<PointTy> octotree(input, triag_num);
   octotree.divide_tree();
 
   std::map<size_t, size_t>         result;
-  std::deque<BoundingBox<PointTy>> octotree_cells = octotree.get_cells();
+  std::deque<triangle::BoundingBox<PointTy>> octotree_cells = octotree.get_cells();
 
 
   for (auto it : octotree_cells) 
   {
-    std::list<Triangle<PointTy>> cur_cell = it.get_incell();
+    std::list<triangle::Triangle<PointTy>> cur_cell = it.get_incell();
     it.group_intersections(result);
   }
 

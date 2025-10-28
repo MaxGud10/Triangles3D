@@ -7,6 +7,9 @@
 #include "point.hpp"
 #include "vector.hpp"
 
+namespace triangle 
+{
+
 template <typename PointTy = double> 
 class Plane 
 {
@@ -173,3 +176,5 @@ Point<PointTy> get_planes_intersection_point(const Plane<PointTy> &plane1, const
 
   return intersectionPoint;
 }
+
+} // namespace triangle
