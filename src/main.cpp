@@ -29,10 +29,6 @@ int main()
   std::map<size_t, size_t>         result;
   std::deque<BoundingBox<PointTy>> octotree_cells = octotree.get_cells();
 
-    // после чтения N
-  if (triag_num <= 2) {
-    g_debug = true;
-  }
 
   for (auto it : octotree_cells) 
   {
