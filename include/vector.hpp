@@ -21,9 +21,9 @@ public:
   {
     Point<PointTy> point = point1 - point2;
 
-    x = point.get_x();
-    y = point.get_y();
-    z = point.get_z();
+    x = point.x;
+    y = point.y;
+    z = point.z;
   }
 
   bool valid() const 
@@ -51,45 +51,42 @@ public:
 
   Vector<PointTy> operator+(const Vector<PointTy> &other) const 
   {
-    Vector<PointTy> add(x + other.x, y + other.y, z + other.z);
-    return add;
+    return {x + other.x, y + other.y, z + other.z};
   }
 
   Vector<PointTy> operator-(const Vector<PointTy> &other) const 
   {
-    Vector<PointTy> sub(x - other.x, y - other.y, z - other.z);
-    return sub;
+    return {x - other.x, y - other.y, z - other.z};
   }
 
   Vector<PointTy> operator/(const PointTy scalar) const 
   {
-    Vector<PointTy> scalar_div(x / scalar, y / scalar, z / scalar);
-    return scalar_div;
+    return {x /  scalar, y / scalar, z / scalar};
   }
 
   Vector<PointTy> operator*(const PointTy scalar) const 
   {
-    Vector<PointTy> scalar_mul(x * scalar, y * scalar, z * scalar);
-    return scalar_mul;
+    return {x * scalar, y * scalar, z * scalar};
   }
 
-  bool operator==(const Vector<PointTy> &other) const 
-  {
-    if (double_cmp(x, other.x) && double_cmp(y, other.y) &&
-        double_cmp(z, other.z)) 
-    {
-      return true;
-    }
+  bool operator==(const Vector&) const = default;
+  // bool operator==(const Vector<PointTy> &other) const 
+  // {
+  //   if (double_cmp(x, other.x) && double_cmp(y, other.y) &&
+  //       double_cmp(z, other.z)) 
+  //   {
+  //     return true;  
+  //   }
 
-    return false;
-  }
+  //   return false;
+  // }
 
-  void operator=(const Vector<PointTy> &other) 
-  {
-    x = other.x;
-    y = other.y;
-    z = other.z;
-  }
+  // void operator=(const Vector<PointTy> &other) 
+  // {
+  //   x = other.x;
+  //   y = other.y;
+  //   z = other.z;
+  // }
 };
 
 // v·w = x1x2 + y1y2 + z1z2.
@@ -102,15 +99,15 @@ PointTy dot(const Vector<PointTy> &vector1, const Vector<PointTy> &vector2)
 template <typename PointTy = double>
 PointTy dot(const Vector<PointTy> &vector, const Point<PointTy> &point) 
 {
-  return vector.x * point.get_x() + vector.y * point.get_y() + 
-         vector.z * point.get_z();
+  return vector.x * point.x + vector.y * point.y + 
+         vector.z * point.z;
 }
 
 template <typename PointTy = double>
 PointTy dot(const Point<PointTy> &point1, const Point<PointTy> &point2) 
 {
-  return point1.get_x() * point2.get_x() + point1.get_y() * point2.get_y() + 
-         point1.get_z() * point2.get_z();
+  return point1.x * point2.x + point1.y * point2.y + 
+         point1.z * point2.z;
 }
 
 
@@ -128,9 +125,9 @@ Vector<PointTy> cross(const Vector<PointTy> &vector1, const Vector<PointTy> &vec
 template <typename PointTy = double>
 Vector<PointTy> cross(const Vector<PointTy> &vector, const Point<PointTy> &point) 
 {
-  Vector<PointTy> vec(vector.y * point.get_z() - vector.z * point.get_y(),
-                      vector.z * point.get_x() - vector.x * point.get_z(),
-                      vector.x * point.get_y() - vector.y * point.get_x());
+  Vector<PointTy> vec(vector.y * point.z - vector.z * point.y,
+                      vector.z * point.x - vector.x * point.z,
+                      vector.x * point.y - vector.y * point.x);
 
   return vec;
 }
@@ -138,7 +135,7 @@ Vector<PointTy> cross(const Vector<PointTy> &vector, const Point<PointTy> &point
 template <typename PointTy = double>
 Vector<PointTy> vector_from_point(const Point<PointTy> &point) 
 {
-  Vector<PointTy> vector{point.get_x(), point.get_y(), point.get_z()};
+  Vector<PointTy> vector{point.x, point.y, point.z};
 
   return vector;
 }

@@ -35,14 +35,14 @@ public:
   Plane(const Point<PointTy> &a, const Point<PointTy> &b,
         const Point<PointTy> &c) 
   {
-    A = (b.get_y() - a.get_y()) * (c.get_z() - a.get_z()) -
-        (b.get_z() - a.get_z()) * (c.get_y() - a.get_y());
-    B = (b.get_z() - a.get_z()) * (c.get_x() - a.get_x()) -
-        (b.get_x() - a.get_x()) * (c.get_z() - a.get_z());
-    C = (b.get_x() - a.get_x()) * (c.get_y() - a.get_y()) -
-        (b.get_y() - a.get_y()) * (c.get_x() - a.get_x());
+    A = (b.y - a.y) * (c.z - a.z) -
+        (b.z - a.z) * (c.y - a.y);
+    B = (b.z - a.z) * (c.x - a.x) -
+        (b.x - a.x) * (c.z - a.z);
+    C = (b.x - a.x) * (c.y - a.y) -
+        (b.y - a.y) * (c.x - a.x);
 
-    D = -(A * a.get_x() + B * a.get_y() + C * a.get_z());
+    D = -(A * a.x + B * a.y + C * a.z);
 
     normal.x = A;
     normal.y = B;
@@ -79,7 +79,7 @@ public:
 
   PointTy substitute(const Point<PointTy> &point) const 
   {
-    return A * point.get_x() + B * point.get_y() + C * point.get_z() + D;
+    return A * point.x + B * point.y + C * point.z + D;
   }
 
   PointTy substitute(const PointTy &x1, const PointTy &y1, const PointTy &z1) const 

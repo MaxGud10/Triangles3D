@@ -48,10 +48,10 @@ public:
 template <typename PointTy = double>
 bool intersect_intervals(Interval<PointTy> &interval1, Interval<PointTy> &interval2) 
 {
-    PointTy int1_min = std::min(interval1.get_p1().get_x(), interval1.get_p2().get_x());
-    PointTy int1_max = std::max(interval1.get_p1().get_x(), interval1.get_p2().get_x());
-    PointTy int2_min = std::min(interval2.get_p1().get_x(), interval2.get_p2().get_x());
-    PointTy int2_max = std::max(interval2.get_p1().get_x(), interval2.get_p2().get_x());
+    PointTy int1_min = std::min(interval1.get_p1().x, interval1.get_p2().x);
+    PointTy int1_max = std::max(interval1.get_p1().x, interval1.get_p2().x);
+    PointTy int2_min = std::min(interval2.get_p1().x, interval2.get_p2().x);
+    PointTy int2_max = std::max(interval2.get_p1().x, interval2.get_p2().x);
 
     if (double_cmp(int1_min, int2_min) || double_cmp(int1_min, int2_max) ||
         double_cmp(int1_max, int2_min) || double_cmp(int1_max, int2_max)) 
@@ -78,9 +78,9 @@ static void push_unique_point(std::vector<Point<PointTy>>& points, const Point<P
 
     for (const auto& q : points) 
     {
-        if (double_cmp(p.get_x(), q.get_x()) &&
-            double_cmp(p.get_y(), q.get_y()) &&
-            double_cmp(p.get_z(), q.get_z())) 
+        if (double_cmp(p.x, q.x) &&
+            double_cmp(p.y, q.y) &&
+            double_cmp(p.z, q.z)) 
             return;
     }
 
@@ -115,9 +115,9 @@ static std::vector<Point<PointTy>> clip_triangle_with_plane(const Triangle<Point
             PointTy t = d1 / (d1 - d2); // t (0,1)
             Point<PointTy> inter
             {
-                P1.get_x() + (P2.get_x() - P1.get_x()) * t,
-                P1.get_y() + (P2.get_y() - P1.get_y()) * t,
-                P1.get_z() + (P2.get_z() - P1.get_z()) * t
+                P1.x + (P2.x - P1.x) * t,
+                P1.y + (P2.y - P1.y) * t,
+                P1.z + (P2.z - P1.z) * t
             };
 
             push_unique_point(out, inter);
@@ -128,7 +128,7 @@ static std::vector<Point<PointTy>> clip_triangle_with_plane(const Triangle<Point
     if (out.size() > 2) 
     {
         std::sort(out.begin(), out.end(),
-                  [](const auto& a, const auto& b){ return a.get_x() < b.get_x(); });
+                  [](const auto& a, const auto& b){ return a.x < b.x; });
 
         out = { out.front(), out.back() };
     }
@@ -157,9 +157,9 @@ Interval<PointTy> get_valid_interval_of_triangle_and_line( const Triangle<PointT
 
     auto same_point = [](const Point<PointTy>& A, const Point<PointTy>& B) 
     {
-        return double_cmp(A.get_x(), B.get_x()) &&
-               double_cmp(A.get_y(), B.get_y()) &&
-               double_cmp(A.get_z(), B.get_z());
+        return double_cmp(A.x, B.x) &&
+               double_cmp(A.y, B.y) &&
+               double_cmp(A.z, B.z);
     };
 
     auto push_unique = [&](const Point<PointTy>& P) 
@@ -203,11 +203,7 @@ Interval<PointTy> get_valid_interval_of_triangle_and_line( const Triangle<PointT
     // case 3: три точки —> одна из них повторяет вершину
     auto dist2 = [](const Point<PointTy>& A, const Point<PointTy>& B) 
     {
-        const PointTy dx = A.get_x() - B.get_x();
-        const PointTy dy = A.get_y() - B.get_y();
-        const PointTy dz = A.get_z() - B.get_z();
-
-        return dx*dx + dy*dy + dz*dz; // возьмём самую дальнюю пару (по квадрату расстояния), чтобы стабильно выбирать крайние
+        return dot(A - B, A - B); // возьмём самую дальнюю пару 
     };
 
     Point<PointTy> a = valid_points[0];

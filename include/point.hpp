@@ -16,20 +16,19 @@ template <typename PointTy> class Plane;
 template <typename PointTy = double> 
 class Point
 {
-    PointTy x = NAN;
-    PointTy y = NAN;
-    PointTy z = NAN;
-
 public:
     bool valid() const 
     {
         return !std::isnan(x) && !std::isnan(y) && !std::isnan(z);
     }
-    
 
-    PointTy get_x() const { return x; }
-    PointTy get_y() const { return y; }
-    PointTy get_z() const { return z; }
+    PointTy x = NAN;
+    PointTy y = NAN;
+    PointTy z = NAN;
+
+    // PointTy x const { return x; }
+    // PointTy y const { return y; }
+    // PointTy z const { return z; }
 
     
     Point() = default; 
@@ -124,9 +123,9 @@ static bool is_point_in_triangle(const Triangle<PointTy>& tri, const Point<Point
 
         auto same_point = [&](const Point<PointTy>& U, const Point<PointTy>& V)
         {
-            return double_cmp(U.get_x(), V.get_x()) &&
-                   double_cmp(U.get_y(), V.get_y()) &&
-                   double_cmp(U.get_z(), V.get_z());
+            return double_cmp(U.x, V.x) &&
+                   double_cmp(U.y, V.y) &&
+                   double_cmp(U.z, V.z);
         };
 
         // лежеит ли point на отрезке [x, y]
@@ -144,16 +143,16 @@ static bool is_point_in_triangle(const Triangle<PointTy>& tri, const Point<Point
                 return false;
 
             // точка в пределах проекционного AABB с допуском
-            const PointTy minx = std::min(X.get_x(), Y.get_x()) - _epsilon;
-            const PointTy maxx = std::max(X.get_x(), Y.get_x()) + _epsilon;
-            const PointTy miny = std::min(X.get_y(), Y.get_y()) - _epsilon;
-            const PointTy maxy = std::max(X.get_y(), Y.get_y()) + _epsilon;
-            const PointTy minz = std::min(X.get_z(), Y.get_z()) - _epsilon;
-            const PointTy maxz = std::max(X.get_z(), Y.get_z()) + _epsilon;
+            const PointTy minx = std::min(X.x, Y.x) - _epsilon;
+            const PointTy maxx = std::max(X.x, Y.x) + _epsilon;
+            const PointTy miny = std::min(X.y, Y.y) - _epsilon;
+            const PointTy maxy = std::max(X.y, Y.y) + _epsilon;
+            const PointTy minz = std::min(X.z, Y.z) - _epsilon;
+            const PointTy maxz = std::max(X.z, Y.z) + _epsilon;
 
-            return (point.get_x() >= minx && point.get_x() <= maxx &&
-                    point.get_y() >= miny && point.get_y() <= maxy &&
-                    point.get_z() >= minz && point.get_z() <= maxz);
+            return (point.x >= minx && point.x <= maxx &&
+                    point.y >= miny && point.y <= maxy &&
+                    point.z >= minz && point.z <= maxz);
         };
 
         return on_segment (A,     B) || on_segment (A,     C) || on_segment (B,     C) ||

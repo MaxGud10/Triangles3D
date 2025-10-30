@@ -21,9 +21,9 @@ public:
 
   void print() const 
   {
-    std::cout << "x = " << vector.x << "t + " << point.get_x() << std::endl;
-    std::cout << "y = " << vector.y << "t + " << point.get_y() << std::endl;
-    std::cout << "z = " << vector.z << "t + " << point.get_z() << std::endl;
+    std::cout << "x = " << vector.x << "t + " << point.x << std::endl;
+    std::cout << "y = " << vector.y << "t + " << point.y << std::endl;
+    std::cout << "z = " << vector.z << "t + " << point.z << std::endl;
   }
 };
 
@@ -31,9 +31,9 @@ public:
 template <typename PointTy = double>
 bool is_point_on_line(Point<PointTy> &point, Line<PointTy> &line) 
 {
-  if (double_cmp(line.vector.x * point.get_x() + line.point.get_x(), 0.0) &&
-      double_cmp(line.vector.y * point.get_y() + line.point.get_y(), 0.0) &&
-      double_cmp(line.vector.z * point.get_z() + line.point.get_z(), 0.0)) 
+  if (double_cmp(line.vector.x * point.x + line.point.x, 0.0) &&
+      double_cmp(line.vector.y * point.y + line.point.y, 0.0) &&
+      double_cmp(line.vector.z * point.z + line.point.z, 0.0)) 
   {
     return true;
   }
@@ -84,9 +84,9 @@ Point<PointTy> intersect_line_with_line(const Line<PointTy> &line1, const Line<P
     return point;
 
   // линии на одной плоскости
-  point = {-line2.vector.x * t + line2.point.get_x(),
-           -line2.vector.y * t + line2.point.get_y(),
-           -line2.vector.z * t + line2.point.get_z()};
+  point = {-line2.vector.x * t + line2.point.x,
+           -line2.vector.y * t + line2.point.y,
+           -line2.vector.z * t + line2.point.z};
 
   return point;
 }

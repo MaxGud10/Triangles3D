@@ -3,6 +3,7 @@
 #include <deque>
 #include <list>
 #include <map>
+#include <numeric>
 
 #include "triangles.hpp"
 
@@ -40,9 +41,9 @@ public:
     }
   }
 
-  PointTy average_x() const { return (max.x + min.x) / 2; }
-  PointTy average_y() const { return (max.y + min.y) / 2; }
-  PointTy average_z() const { return (max.z + min.z) / 2; }
+  PointTy average_x() const { return std::midpoint(min.x, max.x); }
+  PointTy average_y() const { return std::midpoint(min.y, max.y); }
+  PointTy average_z() const { return std::midpoint(min.z, max.z); }
 
   std::list<Triangle<PointTy>> &get_incell() { return incell; }
 
@@ -122,9 +123,9 @@ public:
       {
         PointTy coordinates[3][3] = 
         {
-            it.get_a().get_x(), it.get_b().get_x(), it.get_c().get_x(),
-            it.get_a().get_y(), it.get_b().get_y(), it.get_c().get_y(),
-            it.get_a().get_z(), it.get_b().get_z(), it.get_c().get_z()};
+            it.get_a().x, it.get_b().x, it.get_c().x,
+            it.get_a().y, it.get_b().y, it.get_c().y,
+            it.get_a().z, it.get_b().z, it.get_c().z};
 
         if (coordinates[nod][0] >= average || coordinates[nod][1] >= average ||
             coordinates[nod][2] >= average)
