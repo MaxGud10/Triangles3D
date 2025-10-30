@@ -253,9 +253,9 @@ bool intersect_triangle_with_triangle_in_2D(Triangle<PointTy> &t1, Triangle<Poin
   // выберем какую координату исключим, чтобы рабоать в двумерных координатах
   int excluded_axis_index = 2;     
 
-  PointTy absA = std::fabs(plane.get_A()); // |A|
-  PointTy absB = std::fabs(plane.get_B()); // |B|
-  PointTy absC = std::fabs(plane.get_C()); // |C|
+  PointTy absA = std::abs(plane.get_A()); // |A|
+  PointTy absB = std::abs(plane.get_B()); // |B|
+  PointTy absC = std::abs(plane.get_C()); // |C|
 
   // наибольшая по модулю компонента нормали указывает ось, которую выгоднее исключить
   if (absA >= absB && absA >= absC) 
@@ -270,48 +270,52 @@ bool intersect_triangle_with_triangle_in_2D(Triangle<PointTy> &t1, Triangle<Poin
 
   auto project_point_to_2d = [excluded_axis_index](const Point<PointTy>& p)->std::pair<double,double>
   {
-    if (excluded_axis_index == 0)  return { (double)p.y, (double)p.z }; // (y, z)
-    if (excluded_axis_index == 1)  return { (double)p.x, (double)p.z }; // (x, z)
-    /* excluded_axis_index == 2 */ return { (double)p.x, (double)p.y }; // (x, y)
+    if (excluded_axis_index == 0)  return { p.y, p.z }; // (y, z)
+    if (excluded_axis_index == 1)  return { p.x, p.z }; // (x, z)
+    /* excluded_axis_index == 2 */ return { p.x, p.y }; // (x, y)
   };
 
   // проецируем вершины обоих треугольников в 2D
-  std::pair<double,double> a1 = project_point_to_2d(t1.get_a());
-  std::pair<double,double> b1 = project_point_to_2d(t1.get_b());
-  std::pair<double,double> c1 = project_point_to_2d(t1.get_c());
+  std::pair<PointTy,PointTy> a1 = project_point_to_2d(t1.get_a());
+  std::pair<PointTy,PointTy> b1 = project_point_to_2d(t1.get_b());
+  std::pair<PointTy,PointTy> c1 = project_point_to_2d(t1.get_c());
 
-  std::pair<double,double> a2 = project_point_to_2d(t2.get_a());
-  std::pair<double,double> b2 = project_point_to_2d(t2.get_b());
-  std::pair<double,double> c2 = project_point_to_2d(t2.get_c());
+  std::pair<PointTy,PointTy> a2 = project_point_to_2d(t2.get_a());
+  std::pair<PointTy,PointTy> b2 = project_point_to_2d(t2.get_b());
+  std::pair<PointTy,PointTy> c2 = project_point_to_2d(t2.get_c());
 
   // ориентация площади в 2D
-  auto oriented_area_2d = [](double ax,double ay,double bx, double by,double cx,double cy)
+  auto oriented_area_2d = [](PointTy ax, PointTy ay, PointTy bx, PointTy by, PointTy cx, PointTy cy)
   {
     // >0 — слева от направленного AB; <0 — справа; =0 — коллинеарны
     return (bx-ax)*(cy-ay) - (by-ay)*(cx-ax);
   };
 
   // проверим лежит ли наша точка P на отрезке AB
-  auto point_lies_on_segment_2d = [](double ax,double ay,double bx,double by,double px,double py)
+  auto point_lies_on_segment_2d = [](PointTy ax, PointTy ay, 
+                                     PointTy bx, PointTy by, 
+                                     PointTy px, PointTy py)
   {
-    double area = (bx-ax)*(py-ay) - (by-ay)*(px-ax);
+    PointTy area = (bx-ax)*(py-ay) - (by-ay)*(px-ax);
     if (!double_cmp(area, 0.0)) 
       return false; // не коллинеарны 
 
-    double minx = std::min(ax,bx), maxx = std::max(ax,bx);
-    double miny = std::min(ay,by), maxy = std::max(ay,by);
+    PointTy minx = std::min(ax,bx), maxx = std::max(ax,bx);
+    PointTy miny = std::min(ay,by), maxy = std::max(ay,by);
 
     return (px >= minx && px <= maxx && py >= miny && py <= maxy);
   };
 
   // перечение двух торезков AB и CD в 2D
-  auto segments_intersect_2d = [&](double ax,double ay,double bx,double by,
-                                   double cx,double cy,double dx,double dy)
+  auto segments_intersect_2d = [&](PointTy ax, PointTy ay,
+                                   PointTy bx, PointTy by,
+                                   PointTy cx, PointTy cy,
+                                   PointTy dx, PointTy dy)
   {
-    double o1 = oriented_area_2d(ax,ay,bx,by,cx,cy);
-    double o2 = oriented_area_2d(ax,ay,bx,by,dx,dy);
-    double o3 = oriented_area_2d(cx,cy,dx,dy,ax,ay);
-    double o4 = oriented_area_2d(cx,cy,dx,dy,bx,by);
+    PointTy o1 = oriented_area_2d(ax,ay,bx,by,cx,cy);
+    PointTy o2 = oriented_area_2d(ax,ay,bx,by,dx,dy);
+    PointTy o3 = oriented_area_2d(cx,cy,dx,dy,ax,ay);
+    PointTy o4 = oriented_area_2d(cx,cy,dx,dy,bx,by);
 
     bool sep1 = (o1 > 0.0 && o2 < 0.0) || (o1 < 0.0 && o2 > 0.0);
     bool sep2 = (o3 > 0.0 && o4 < 0.0) || (o3 < 0.0 && o4 > 0.0);
@@ -329,14 +333,14 @@ bool intersect_triangle_with_triangle_in_2D(Triangle<PointTy> &t1, Triangle<Poin
 
   // проверия, что точка P=(px,py) внутри/на границе треугольника ABC в 2D
   // то есть если все ориентированные площади относительно ребер ABC имеют один и тот же знак или 0
-  auto point_inside_triangle_2d = [&](double px, double py,
-                                      const std::pair<double,double>& A,
-                                      const std::pair<double,double>& B,
-                                      const std::pair<double,double>& C)
+  auto point_inside_triangle_2d = [&](PointTy px, PointTy py,
+                                      const std::pair<PointTy, PointTy>& A,
+                                      const std::pair<PointTy, PointTy>& B,
+                                      const std::pair<PointTy, PointTy>& C)
   {
-    double o1 = oriented_area_2d(A.first,A.second,B.first,B.second,px,py);
-    double o2 = oriented_area_2d(B.first,B.second,C.first,C.second,px,py);
-    double o3 = oriented_area_2d(C.first,C.second,A.first,A.second,px,py);
+    PointTy o1 = oriented_area_2d(A.first,A.second,B.first,B.second,px,py);
+    PointTy o2 = oriented_area_2d(B.first,B.second,C.first,C.second,px,py);
+    PointTy o3 = oriented_area_2d(C.first,C.second,A.first,A.second,px,py);
 
     bool pos1 = o1 > 0.0 && !double_cmp(o1,0.0);
     bool pos2 = o2 > 0.0 && !double_cmp(o2,0.0);

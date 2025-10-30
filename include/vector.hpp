@@ -70,23 +70,6 @@ public:
   }
 
   bool operator==(const Vector&) const = default;
-  // bool operator==(const Vector<PointTy> &other) const 
-  // {
-  //   if (double_cmp(x, other.x) && double_cmp(y, other.y) &&
-  //       double_cmp(z, other.z)) 
-  //   {
-  //     return true;  
-  //   }
-
-  //   return false;
-  // }
-
-  // void operator=(const Vector<PointTy> &other) 
-  // {
-  //   x = other.x;
-  //   y = other.y;
-  //   z = other.z;
-  // }
 };
 
 // v·w = x1x2 + y1y2 + z1z2.
