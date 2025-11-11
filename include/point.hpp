@@ -50,9 +50,8 @@ public:
 
     bool almost_equal(const Point<PointTy>& other, PointTy eps = 1e-6) const
     {
-        return std::fabs(x - other.x) <= eps &&
-              std::fabs(y - other.y) <= eps &&
-              std::fabs(z - other.z) <= eps;
+      return double_cmp(x, other.x) && double_cmp(y, other.y) &&
+             double_cmp(z, other.z);
     }
 
     Point<PointTy> operator+(const Point<PointTy> &other) const 

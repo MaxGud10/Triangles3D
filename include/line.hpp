@@ -64,30 +64,49 @@ Point<PointTy> intersect_line_with_line(const Line<PointTy> &line1, const Line<P
 {
   Point<PointTy> point{NAN, NAN, NAN};
 
-  PointTy A = dot(line1.vector, line1.vector                           );
-  PointTy B = dot(line1.vector, line2.vector                           );
-  PointTy C = dot(line2.vector, line2.vector                           );
-  PointTy D = dot(line1.vector, line1.point - line2.point              );
-  PointTy E = dot(line2.vector, line1.point - line2.point              );
-  PointTy F = dot(line1.point - line2.point,  line1.point - line2.point);
+  const Vector<PointTy>& u  = line1.vector;
+  const Vector<PointTy>& v  = line2.vector;
+        Vector<PointTy>  w0 = vector_from_point(line1.point - line2.point);
+
+  PointTy A = dot(u, u);
+  PointTy B = dot(u, v);
+  PointTy C = dot(v, v);
+  PointTy D = dot(u, w0);
+  PointTy E = dot(v, w0);
 
   PointTy denom = A * C - B * B;
-  if (double_cmp(denom, 0.0)) // parallel lines
+  if (double_cmp(denom, 0.0)) // прямые параллельны
     return point;
 
   // непараллельные прямые
   PointTy s = (B * E - C * D) / denom;
-  PointTy t = (A * E - B * D) / denom;
+  PointTy t = (A * E - B * D) / denom; 
 
-  PointTy dist = s * (A * s + B * t + 2 * D) + t * (B * s + C * t + 2 * E) + F;
-  if (!double_cmp(dist, 0.0)) // прямые не находятся в одной плоскости
+  // точки ближайшего подхода на каждой прямой
+  Point<PointTy> p1
+  {
+      line1.point.x + u.x * s,
+      line1.point.y + u.y * s,
+      line1.point.z + u.z * s,
+  };
+
+  Point<PointTy> p2
+  {
+      line2.point.x + v.x * t,
+      line2.point.y + v.y * t,
+      line2.point.z + v.z * t,
+  };
+
+  // расстояние между ближайшими точками на прямых
+  Vector<PointTy> diff  = vector_from_point(p1 - p2);
+         PointTy  dist2 = dot(diff, diff);
+
+  // если прямые не лежат в одной плоскости (скрещиваются) — dist2 > 0
+  if (!double_cmp(dist2, 0.0))
     return point;
 
-  point = {line2.point.x + line2.vector.x * t,
-           line2.point.y + line2.vector.y * t,
-           line2.point.z + line2.vector.z * t }; // poit = line2.poit + t * line2.vector
-
-  return point;
+  // прямые в одной плоскости —> возвращаем точку пересечения на второй прямой
+  return p2; 
 }
 
 // находим саму линию (точку и напрявляющий вектор) из треугольника который выродился в линию

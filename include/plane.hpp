@@ -87,8 +87,8 @@ public:
     return A * x1 + B * y1 + C * z1 + D;
   }
 
-  // используется double_cmp() для сравнения с эпсилоном, чтобы учесть ошибки округления.
-  bool operator==(const Plane<PointTy> &other) const 
+  // // используется double_cmp() для сравнения с эпсилоном, чтобы учесть ошибки округления.
+  bool almost_equal(const Plane<PointTy> &other) const 
   {
     // проверим на совпадени плоскостей с точностью до знака
     if ((double_cmp( A, other.A) && double_cmp( B, other.B) &&
@@ -101,6 +101,12 @@ public:
 
     return false;
   }
+
+  bool operator==(const Plane<PointTy> &other) const
+  {
+      return A == other.A && B == other.B && C == other.C && D == other.D;
+  }
+
 
   PointTy get_A() const { return A; }
   PointTy get_B() const { return B; }
