@@ -14,14 +14,16 @@ namespace triangle
 template <typename PointTy = double> 
 class BoundingBox 
 {
-  std::list<Triangle<PointTy>> incell;
+  std::deque<Triangle<PointTy>> incell;
 
   Vector<PointTy> min;
   Vector<PointTy> max;
 
 public:
-  BoundingBox(const std::list<Triangle<PointTy>> &triangles) : incell(triangles) 
+  BoundingBox(const std::list<Triangle<PointTy>> &triangles) 
   {
+    incell.insert(incell.end(), triangles.begin(), triangles.end());
+
     auto it = incell.begin();
 
     min.x = max.x = it->min_x();
@@ -45,7 +47,8 @@ public:
   PointTy average_y() const { return std::midpoint(min.y, max.y); }
   PointTy average_z() const { return std::midpoint(min.z, max.z); }
 
-  std::list<Triangle<PointTy>> &get_incell() { return incell; }
+        std::deque<Triangle<PointTy>> &get_incell()       { return incell; }
+  const std::deque<Triangle<PointTy>> &get_incell() const { return incell; }
 
   void group_intersections(std::map<size_t, size_t> &result) 
   {

@@ -26,13 +26,12 @@ int main()
   triangle::Octotree<PointTy> octotree(input, triag_num);
   octotree.divide_tree();
 
-  std::map<size_t, size_t>         result;
+  std::map<size_t, size_t>                   result;
   std::deque<triangle::BoundingBox<PointTy>> octotree_cells = octotree.get_cells();
 
 
   for (auto it : octotree_cells) 
   {
-    std::list<triangle::Triangle<PointTy>> cur_cell = it.get_incell();
     it.group_intersections(result);
   }
 

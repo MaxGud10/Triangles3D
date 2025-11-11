@@ -16,10 +16,11 @@ template <typename PointTy> class Triangle;
 template <typename PointTy = double> 
 class Interval 
 {
+public:
     Point<PointTy> p1; // первая точка интервала
     Point<PointTy> p2; // вторая точка интервала 
 
-public:
+
     Interval() = default;
 
     Interval(Point<PointTy> p1, Point<PointTy> p2) 
@@ -30,8 +31,6 @@ public:
 
     bool valid() const { return p1.valid() && p2.valid(); }
 
-    Point<PointTy> get_p1() const { return p1; }
-    Point<PointTy> get_p2() const { return p2; }
 
     void print() const 
     {
@@ -48,10 +47,10 @@ public:
 template <typename PointTy = double>
 bool intersect_intervals(Interval<PointTy> &interval1, Interval<PointTy> &interval2) 
 {
-    PointTy int1_min = std::min(interval1.get_p1().x, interval1.get_p2().x);
-    PointTy int1_max = std::max(interval1.get_p1().x, interval1.get_p2().x);
-    PointTy int2_min = std::min(interval2.get_p1().x, interval2.get_p2().x);
-    PointTy int2_max = std::max(interval2.get_p1().x, interval2.get_p2().x);
+    PointTy int1_min = std::min(interval1.p1.x, interval1.p2.x);
+    PointTy int1_max = std::max(interval1.p1.x, interval1.p2.x);
+    PointTy int2_min = std::min(interval2.p1.x, interval2.p2.x);
+    PointTy int2_max = std::max(interval2.p1.x, interval2.p2.x);
 
     if (double_cmp(int1_min, int2_min) || double_cmp(int1_min, int2_max) ||
         double_cmp(int1_max, int2_min) || double_cmp(int1_max, int2_max)) 
@@ -71,7 +70,7 @@ bool intersect_intervals(Interval<PointTy> &interval1, Interval<PointTy> &interv
 
 // ====================================================
 template <typename PointTy>
-static void push_unique_point(std::vector<Point<PointTy>>& points, const Point<PointTy>& p) 
+void push_unique_point(std::vector<Point<PointTy>>& points, const Point<PointTy>& p) 
 {
     if (!p.valid()) 
         return;
@@ -89,7 +88,7 @@ static void push_unique_point(std::vector<Point<PointTy>>& points, const Point<P
 
 // пересечение треугольника с плоскотью
 template <typename PointTy>
-static std::vector<Point<PointTy>> clip_triangle_with_plane(const Triangle<PointTy>& tri, const Plane<PointTy>& plane)
+std::vector<Point<PointTy>> clip_triangle_with_plane(const Triangle<PointTy>& tri, const Plane<PointTy>& plane)
 {
     const Point<PointTy> V[3] = { tri.get_a(),          tri.get_b(),          tri.get_c() };
                 PointTy  d[3] = { plane .substitute(V[0]), plane .substitute(V[1]), plane .substitute(V[2]) };
@@ -138,7 +137,7 @@ static std::vector<Point<PointTy>> clip_triangle_with_plane(const Triangle<Point
 
 // фломируем интервал из найденных точек пересечения с плоскостью
 template <typename PointTy>
-static Interval<PointTy> interval_from_points(const std::vector<Point<PointTy>>& pts)
+Interval<PointTy> interval_from_points(const std::vector<Point<PointTy>>& pts)
 {
     if (pts.empty()) 
         return Interval<PointTy>{};

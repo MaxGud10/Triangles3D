@@ -26,11 +26,6 @@ public:
     PointTy y = NAN;
     PointTy z = NAN;
 
-    // PointTy x const { return x; }
-    // PointTy y const { return y; }
-    // PointTy z const { return z; }
-
-    
     Point() = default; 
 
     Point(PointTy x, PointTy y, PointTy z) : x(x), y(y), z(z) {};
@@ -42,19 +37,23 @@ public:
 
 
     PointTy norm() const { return x * x + y * y + z * z; } // |p|^2
-
-    bool operator==(const Point<PointTy> &other) const 
+    
+    bool operator==(const Point<PointTy>& other) const
     {
-      return double_cmp(x, other.x) && double_cmp(y, other.y) &&
-             double_cmp(z, other.z);
+        return x == other.x && y == other.y && z == other.z;
     }
 
-    bool operator!=(const Point<PointTy> &other) const 
+    bool operator!=(const Point<PointTy>& other) const
     {
-      return !double_cmp(x, other.x) || !double_cmp(y, other.y) ||
-             !double_cmp(z, other.z);
+        return !(*this == other);
     }
 
+    bool almost_equal(const Point<PointTy>& other, PointTy eps = 1e-6) const
+    {
+        return std::fabs(x - other.x) <= eps &&
+              std::fabs(y - other.y) <= eps &&
+              std::fabs(z - other.z) <= eps;
+    }
 
     Point<PointTy> operator+(const Point<PointTy> &other) const 
     {
@@ -84,7 +83,7 @@ public:
 template <typename PointTy = double>
 bool three_points_on_one_line(const Point<PointTy> &a, const Point<PointTy> &b, const Point<PointTy> &c)
 {
-    Vector<PointTy> AB{b, a};
+    Vector<PointTy> AB{b, a}; 
     Vector<PointTy> AC{c, a};
     Vector<PointTy> cr = cross(AB, AC);
 

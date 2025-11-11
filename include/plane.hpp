@@ -87,6 +87,7 @@ public:
     return A * x1 + B * y1 + C * z1 + D;
   }
 
+  // используется double_cmp() для сравнения с эпсилоном, чтобы учесть ошибки округления.
   bool operator==(const Plane<PointTy> &other) const 
   {
     // проверим на совпадени плоскостей с точностью до знака

@@ -8,6 +8,11 @@
 #include "point.hpp"
 #include "vector.hpp"
 
+// enum class min_x_y_z
+// {
+    
+// };
+
 namespace triangle 
 {
 
@@ -42,6 +47,21 @@ private:
 
     type = TRIANGLE;
   }
+
+  PointTy coord(const Point<PointTy>& p, int axis) const 
+  {
+      switch (axis) 
+      {
+        case 0: return p.x;
+        case 1: return p.y;
+        case 2: return p.z;
+
+        default: throw std::invalid_argument("Invalid axis");
+      }
+  }
+// TODO: enum creat
+  PointTy min_coord(int axis) const { return std::min({coord(a, axis), coord(b, axis), coord(c, axis)}); }
+  PointTy max_coord(int axis) const { return std::max({coord(a, axis), coord(b, axis), coord(c, axis)}); }
 
 public:
   Triangle(const PointTy &x1, const PointTy &y1, const PointTy &z1,
@@ -100,12 +120,19 @@ public:
   Point<PointTy> get_b() const { return b; }
   Point<PointTy> get_c() const { return c; }
 
-  PointTy min_x() const { return std::min(a.x, std::min(b.x, c.x)); }
-  PointTy max_x() const { return std::max(a.x, std::max(b.x, c.x)); }
-  PointTy min_y() const { return std::min(a.y, std::min(b.y, c.y)); }
-  PointTy max_y() const { return std::max(a.y, std::max(b.y, c.y)); }
-  PointTy min_z() const { return std::min(a.z, std::min(b.z, c.z)); }
-  PointTy max_z() const { return std::max(a.z, std::max(b.z, c.z)); }
+  // PointTy min_x() const { return std::min(a.x, std::min(b.x, c.x)); }
+  // PointTy max_x() const { return std::max(a.x, std::max(b.x, c.x)); }
+  // PointTy min_y() const { return std::min(a.y, std::min(b.y, c.y)); }
+  // PointTy max_y() const { return std::max(a.y, std::max(b.y, c.y)); }
+  // PointTy min_z() const { return std::min(a.z, std::min(b.z, c.z)); }
+  // PointTy max_z() const { return std::max(a.z, std::max(b.z, c.z)); }
+
+  PointTy min_x() const { return min_coord(0); }
+  PointTy max_x() const { return max_coord(0); }
+  PointTy min_y() const { return min_coord(1); }
+  PointTy max_y() const { return max_coord(1); }
+  PointTy min_z() const { return min_coord(2); }
+  PointTy max_z() const { return max_coord(2); }
 
   TriangleType get_type() const { return type; }
 };
@@ -473,33 +500,6 @@ bool intersect_line_with_line(const Triangle<PointTy> t1, const Triangle<PointTy
   return check_if_inter_point_belongs_space(min1, max1, min2, max2, point);
 }
 
-
-// template <typename PointTy = double>
-// bool intersect_triangle_with_line_in_2D(Triangle<PointTy> &t1, Line<PointTy> &line, Point<PointTy> &t2_a, Point<PointTy> &t2_b) 
-// {
-//   Line<PointTy> line1{vector_from_point(t1.get_b() - t1.get_a()), t1.get_a()};
-//   Line<PointTy> line2{vector_from_point(t1.get_c() - t1.get_a()), t1.get_a()};
-//   Line<PointTy> line3{vector_from_point(t1.get_c() - t1.get_b()), t1.get_b()};
-
-//   Point<PointTy> point1 = intersect_line_with_line(line, line1);
-//   if (check_if_inter_point_belongs_side(t1.get_a(), t1.get_b(), point1, t2_a, t2_b)) 
-//   {
-//     return true;
-//   } 
-
-//   else 
-//   {
-//     Point<PointTy> point2 = intersect_line_with_line(line, line2);
-//     if (check_if_inter_point_belongs_side(t1.get_a(), t1.get_c(), point2, t2_a, t2_b)) 
-//       return true;
-
-//     Point<PointTy> point3 = intersect_line_with_line(line, line3);
-//     if (check_if_inter_point_belongs_side(t1.get_b(), t1.get_c(), point3, t2_a, t2_b))
-//       return true;
-//   }
-
-//   return false;
-// }
 
 template <typename PointTy = double>
 bool check_if_inter_point_belongs_sides(const Point<PointTy> &a1, const Point<PointTy> &b1,

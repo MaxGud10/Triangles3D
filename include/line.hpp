@@ -77,16 +77,15 @@ Point<PointTy> intersect_line_with_line(const Line<PointTy> &line1, const Line<P
 
   // непараллельные прямые
   PointTy s = (B * E - C * D) / denom;
-  PointTy t = (B * D - A * E) / denom;
+  PointTy t = (A * E - B * D) / denom;
 
   PointTy dist = s * (A * s + B * t + 2 * D) + t * (B * s + C * t + 2 * E) + F;
   if (!double_cmp(dist, 0.0)) // прямые не находятся в одной плоскости
     return point;
 
-  // линии на одной плоскости
-  point = {-line2.vector.x * t + line2.point.x,
-           -line2.vector.y * t + line2.point.y,
-           -line2.vector.z * t + line2.point.z};
+  point = {line2.point.x + line2.vector.x * t,
+           line2.point.y + line2.vector.y * t,
+           line2.point.z + line2.vector.z * t }; // poit = line2.poit + t * line2.vector
 
   return point;
 }
