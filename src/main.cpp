@@ -2,13 +2,12 @@
 
 int main() 
 {
-
-
   using PointTy = double;
 
-  std::list<triangle::Triangle<PointTy>> input;
+  std::vector<triangle::Triangle<PointTy>> input;
   size_t triag_num = 0;
   std::cin >> triag_num;
+  input.reserve(triag_num);
 
   for (size_t i = 0; i < triag_num; ++i) 
   {

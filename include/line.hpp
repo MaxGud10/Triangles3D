@@ -7,6 +7,8 @@
 namespace triangle 
 {
 
+template <typename PointTy> class Triangle;
+
 template <typename PointTy = double> 
 class Line 
 {
@@ -26,6 +28,17 @@ public:
     std::cout << "z = " << vector.z << "t + " << point.z << std::endl;
   }
 };
+
+// проверяем, что 3 точки лежит на одной прямой
+template <typename PointTy = double>
+bool three_points_on_one_line(const Point<PointTy> &a, const Point<PointTy> &b, const Point<PointTy> &c)
+{
+    Vector<PointTy> AB{b, a}; 
+    Vector<PointTy> AC{c, a};
+    Vector<PointTy> cr = cross(AB, AC);
+
+    return double_cmp(cr.x,0.0) && double_cmp(cr.y,0.0) && double_cmp(cr.z,0.0);
+}
 
 // лежит ли точка на прямой
 template <typename PointTy = double>

@@ -9,9 +9,11 @@ template <typename PointTy = double>
 class Vector 
 {
 public:
-  PointTy x = NAN;
-  PointTy y = NAN;
-  PointTy z = NAN;
+  static constexpr PointTy NaN = std::numeric_limits<PointTy>::quiet_NaN();
+
+  PointTy x = NaN;
+  PointTy y = NaN;
+  PointTy z = NaN;
 
   Vector() = default;
 

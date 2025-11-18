@@ -27,5 +27,11 @@ add_test(
           $<TARGET_FILE:triag>
 )
 
+add_custom_target(check
+  COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+)
+add_dependencies(check triag google_test)
+
+
 set_tests_properties(google_test PROPERTIES LABELS "unit")
-set_tests_properties(e2e_all    PROPERTIES LABELS "e2e")
+set_tests_properties(e2e_all     PROPERTIES LABELS "e2e" )

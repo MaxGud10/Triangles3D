@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <math.h>
+#include <limits>
 
 #include "config.hpp"
 #include "point.hpp"
@@ -13,12 +14,14 @@ namespace triangle
 template <typename PointTy = double> 
 class Plane 
 {
-  PointTy A = NAN; // Ax + By + Cz + D = 0.
-  PointTy B = NAN;
-  PointTy C = NAN;
-  PointTy D = NAN;
+  static constexpr PointTy NaN = std::numeric_limits<PointTy>::quiet_NaN();
 
-  PointTy normal_length = NAN;
+  PointTy A = NaN; // Ax + By + Cz + D = 0.
+  PointTy B = NaN;
+  PointTy C = NaN;
+  PointTy D = NaN;
+
+  PointTy normal_length = NaN;
   Vector<PointTy> normal;
 
   void normalize_plane() 
@@ -144,9 +147,11 @@ Vector<PointTy> get_planes_intersection_vector(const Plane<PointTy> &plane1, con
 template <typename PointTy = double>
 Point<PointTy> get_planes_intersection_point(const Plane<PointTy> &plane1, const Plane<PointTy> &plane2) 
 {
-  PointTy x = NAN;
-  PointTy y = NAN; 
-  PointTy z = NAN;
+  static constexpr PointTy NaN = std::numeric_limits<PointTy>::quiet_NaN();
+
+  PointTy x = NaN; 
+  PointTy y = NaN;
+  PointTy z = NaN;
 
   PointTy determinant_x_zero = plane1.get_B() * plane2.get_C() - plane1.get_C() * plane2.get_B();
   PointTy determinant_y_zero = plane1.get_A() * plane2.get_C() - plane1.get_C() * plane2.get_A();

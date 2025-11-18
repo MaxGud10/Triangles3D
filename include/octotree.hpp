@@ -1,9 +1,8 @@
 #pragma once
 
 #include <deque>
-#include <list>
 #include <map>
-#include <numeric>
+#include <vector>
 
 #include "triangles.hpp"
 
@@ -20,7 +19,7 @@ class BoundingBox
   Vector<PointTy> max;
 
 public:
-  BoundingBox(const std::list<Triangle<PointTy>> &triangles) 
+  BoundingBox(const std::vector<Triangle<PointTy>> &triangles)
   {
     incell.insert(incell.end(), triangles.begin(), triangles.end());
 
@@ -43,9 +42,9 @@ public:
     }
   }
 
-  PointTy average_x() const { return std::midpoint(min.x, max.x); }
-  PointTy average_y() const { return std::midpoint(min.y, max.y); }
-  PointTy average_z() const { return std::midpoint(min.z, max.z); }
+  PointTy average_x() const { return (min.x + max.x) / static_cast<PointTy>(2); }
+  PointTy average_y() const { return (min.y + max.y) / static_cast<PointTy>(2); }
+  PointTy average_z() const { return (min.z + max.z) / static_cast<PointTy>(2); }
 
         std::deque<Triangle<PointTy>> &get_incell()       { return incell; }
   const std::deque<Triangle<PointTy>> &get_incell() const { return incell; }
@@ -72,7 +71,7 @@ public:
 template <typename PointTy = double> 
 class Octotree 
 {
-  std::list<Triangle<PointTy>>     input;
+  std::vector<Triangle<PointTy>>   input;
   std::deque<BoundingBox<PointTy>> cells;
 
   size_t depth     = 0;
@@ -80,7 +79,7 @@ class Octotree
   size_t triag_num = 0;
 
 public:
-  Octotree(const std::list<Triangle<PointTy>> &triangles, const size_t triag_num) : input(triangles), triag_num(triag_num) 
+  Octotree(const std::vector<Triangle<PointTy>> &triangles, const size_t triag_num) : input(triangles), triag_num(triag_num) 
   {
     cells.push_back(BoundingBox<PointTy>(input));
     depth = count_depth(triag_num);
@@ -110,8 +109,8 @@ public:
   {
     static int axis = 0;
 
-    std::list<Triangle<PointTy>> plus;
-    std::list<Triangle<PointTy>> minus;
+    std::vector<Triangle<PointTy>> plus;
+    std::vector<Triangle<PointTy>> minus;
 
     size_t copy_num_of_cells = cells_num;
 
@@ -121,6 +120,9 @@ public:
 
       size_t  nod     = axis % 3;
       PointTy average = calculate_average(front_groups, nod);
+
+      plus .reserve(front_groups.get_incell().size());
+      minus.reserve(front_groups.get_incell().size());
 
       for (const auto &it : front_groups.get_incell()) 
       {
