@@ -70,10 +70,10 @@ public:
     bool operator==(const Plane<PointTy> &other) const 
     {
         // Checking for alignment of planes with precision to the sign
-        if ((cmp(A, other.A) && cmp(B, other.B) && cmp(C, other.C) &&
-            cmp(D, other.D)) ||
+        if ((cmp( A, other.A) && cmp(B, other.B) && cmp(C, other.C) &&
+             cmp( D, other.D)) ||
             (cmp(-A, other.A) && cmp(-B, other.B) && cmp(-C, other.C) &&
-            cmp(-D, other.D))) 
+             cmp(-D, other.D))) 
         {
             return true;
         }
@@ -85,6 +85,7 @@ public:
     PointTy get_B() const { return B; }
     PointTy get_C() const { return C; }
     PointTy get_D() const { return D; }
+
     Vector<PointTy> get_normal() const { return normal; }
 };
 
@@ -92,12 +93,12 @@ template <typename PointTy = double>
 bool planes_are_parallel(const Plane<PointTy> &plane1,
                          const Plane<PointTy> &plane2) 
 {
-    if ((cmp(plane1.get_A(), plane2.get_A()) &&
-        cmp(plane1.get_B(), plane2.get_B()) &&
-        cmp(plane1.get_C(), plane2.get_C())) ||
+    if ((cmp( plane1.get_A(), plane2.get_A()) &&
+         cmp( plane1.get_B(), plane2.get_B()) &&
+         cmp( plane1.get_C(), plane2.get_C())) ||
         (cmp(-plane1.get_A(), plane2.get_A()) &&
-        cmp(-plane1.get_B(), plane2.get_B()) &&
-        cmp(-plane1.get_C(), plane2.get_C()))) 
+         cmp(-plane1.get_B(), plane2.get_B()) &&
+         cmp(-plane1.get_C(), plane2.get_C()))) 
     {
         return true;
     }
