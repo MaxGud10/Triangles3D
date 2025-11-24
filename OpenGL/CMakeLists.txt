@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(OpenGLProject)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_C_STANDARD 11)
 
 include_directories(include)
 
@@ -12,8 +13,12 @@ find_package(GLU REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_search_module(GLFW REQUIRED glfw3)
 
-include_directories(${GLEW_INCLUDE_DIRS} ${GLFW_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS})
+set(GLAD_SOURCE src/glad.c)
+set(GLAD_INCLUDE include/glad)
+
+include_directories(${GLEW_INCLUDE_DIRS} ${GLFW_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS} ${GLAD_INCLUDE})
 link_directories(${GLEW_LIBRARY_DIRS} ${GLFW_LIBRARY_DIRS} ${GLUT_LIBRARY_DIRS})
+
 
 # -------- function to create executables --------
 function(make_program name source)
