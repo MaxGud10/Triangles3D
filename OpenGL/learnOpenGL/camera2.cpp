@@ -5,8 +5,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 // Настройки
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 900;
+const unsigned int SCR_HEIGHT = 900;
 
 glm::vec3 cameraPos = glm::vec3(0.0f, 3.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, -0.5f, -1.0f);
@@ -22,13 +22,12 @@ float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 
-void processInput(GLFWwindow* window) 
+void processInput(GLFWwindow* window)
 {
     float cameraSpeed = 2.5f * deltaTime;
-    
+
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-        
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         cameraPos += cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -39,9 +38,9 @@ void processInput(GLFWwindow* window)
         cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 }
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos) 
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
-    if (firstMouse) 
+    if (firstMouse)
     {
         lastX = xpos;
         lastY = ypos;
@@ -49,7 +48,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     }
 
     float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; 
+    float yoffset = lastY - ypos;
     lastX = xpos;
     lastY = ypos;
 
@@ -70,11 +69,11 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     cameraFront = glm::normalize(front);
 }
 
-void drawGrid() 
+void drawGrid()
 {
     glColor3f(0.5f, 0.5f, 0.5f);
     glBegin(GL_LINES);
-    for(int i = -100; i <= 100; i++) 
+    for(int i = -100; i <= 100; i++)
     {
         glVertex3f(i, 0.0f, -100.0f);
         glVertex3f(i, 0.0f, 100.0f);
@@ -85,7 +84,7 @@ void drawGrid()
     glEnd();
 }
 
-void drawTriangle() 
+void drawTriangle()
 {
     glColor3f(0.0f, 1.0f, 0.0f);
     glBegin(GL_TRIANGLES);
@@ -96,13 +95,13 @@ void drawTriangle()
     glEnd();
 }
 
-int main() 
+int main()
 {
-    if (!glfwInit()) 
+    if (!glfwInit())
         return -1;
 
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "3D Scene", NULL, NULL);
-    if (!window) 
+    if (!window)
     {
         glfwTerminate();
         return -1;
@@ -114,7 +113,7 @@ int main()
 
     glEnable(GL_DEPTH_TEST);
 
-    while (!glfwWindowShouldClose(window)) 
+    while (!glfwWindowShouldClose(window))
     {
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
@@ -127,11 +126,11 @@ int main()
 
         // Матрицы проекции
         glm::mat4 projection = glm::perspective(
-            glm::radians(45.0f), 
-            (float)SCR_WIDTH/(float)SCR_HEIGHT, 
+            glm::radians(45.0f),
+            (float)SCR_WIDTH/(float)SCR_HEIGHT,
             0.1f, 100.0f
         );
-        
+
         glm::mat4 view = glm::lookAt(
             cameraPos,
             cameraPos + cameraFront,
