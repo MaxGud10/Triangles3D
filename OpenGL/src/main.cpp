@@ -1,4 +1,5 @@
 // #define GLEW_STATIC
+#define GLM_ENABLE_EXPERIMENTAL
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <cmath>
@@ -13,7 +14,7 @@
 #include "EBO.hpp"
 
 
-// #include "camera.hpp"
+#include "camera.hpp"
 
 const uint32_t SCREEN_WIDTH  = 1000;
 const uint32_t SCREEN_HEIGHT = 1000;
@@ -61,9 +62,13 @@ int main(void) {
 
     VBO VBO1(vertices, sizeof(vertices));
 
-    VAO1.LinkVBO(VBO1, 0);
+    VAO1.LinkAttrib(VBO1, 2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 *sizeof(float)));
     VAO1.Unbind();
     VBO1.Unbind();
+
+    glEnable(GL_DEPTH_TEST);
+
+    Camera camera(width, height, glm::vec3(0.0f, 0.0f, 2.0f));
 
     while (!glfwWindowShouldClose(window)) {
 
@@ -72,6 +77,7 @@ int main(void) {
         glClear(GL_COLOR_BUFFER_BIT);
 
         shaderProgram.Activate();
+        camera.Matrix(45.0f, 0.1f, 100.0f, shaderProgram, "camMatrix");
         VAO1.Bind();
 
         glDrawArrays(GL_TRIANGLES, 0, 3);

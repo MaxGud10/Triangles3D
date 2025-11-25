@@ -38,6 +38,7 @@ set(MAIN_SOURCES
     src/VAO.cpp
     src/VBO.cpp
     src/EBO.cpp
+    src/camera.cpp
 )
 
 add_executable(main ${MAIN_SOURCES})

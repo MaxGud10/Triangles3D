@@ -1,6 +1,9 @@
 #pragma once
 
-#include <glad/glad.h>
+
+#define GLM_ENABLE_EXPERIMENTAL
+
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -8,6 +11,7 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/vector_angle.hpp>
 
+#include "shader.hpp"
 
 class Camera {
 
