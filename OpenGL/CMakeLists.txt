@@ -32,6 +32,23 @@ target_link_libraries(${name}
 )
 endfunction()
 
+set(MAIN_SOURCES
+    src/main.cpp
+    src/shader.cpp
+    src/VAO.cpp
+    src/VBO.cpp
+    src/EBO.cpp
+)
+
+add_executable(main ${MAIN_SOURCES})
+target_link_libraries(main
+            OpenGL::GL
+            GLU
+            ${GLEW_LIBRARIES}
+            ${GLFW_LIBRARIES}
+            ${GLUT_LIBRARIES}
+            )
+
 # -------- individual programs --------
 make_program(camera1 learnOpenGL/camera1.cpp)
 make_program(camera2 learnOpenGL/camera2.cpp)
@@ -39,4 +56,3 @@ make_program(hello_triangle learnOpenGL/hello_triangle.cpp)
 make_program(math_prog learnOpenGL/math.cpp)
 make_program(shaders_1 learnOpenGL/shaders_1.cpp)
 make_program(shaders_2 learnOpenGL/shaders_2.cpp)
-make_program(main src/main.cpp)
