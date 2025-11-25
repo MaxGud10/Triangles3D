@@ -77,6 +77,7 @@ int main(void) {
         glClear(GL_COLOR_BUFFER_BIT);
 
         shaderProgram.Activate();
+        camera.Inputs(window);
         camera.Matrix(45.0f, 0.1f, 100.0f, shaderProgram, "camMatrix");
         VAO1.Bind();
 
