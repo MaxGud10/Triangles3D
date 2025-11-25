@@ -1,4 +1,5 @@
-#define GLEW_STATIC
+// #define GLEW_STATIC
+#define GLM_ENABLE_EXPERIMENTAL
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <cmath>
@@ -7,7 +8,13 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-// #include "camera.hpp"
+#include "shader.hpp"
+#include "VAO.hpp"
+#include "VBO.hpp"
+#include "EBO.hpp"
+
+
+#include "camera.hpp"
 
 const uint32_t SCREEN_WIDTH  = 1000;
 const uint32_t SCREEN_HEIGHT = 1000;
@@ -49,39 +56,19 @@ int main(void) {
         0.0f,  0.5f, 0.0f  // Top
     };
 
+    Shader shaderProgram("../shaders/vertex.vert", "../shaders/fragment.frag");
+    VAO VAO1;
+    VAO1.Bind();
 
-    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
+    VBO VBO1(vertices, sizeof(vertices));
 
-    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
+    VAO1.LinkAttrib(VBO1, 2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 *sizeof(float)));
+    VAO1.Unbind();
+    VBO1.Unbind();
 
-    // wrapping programs into shader programs
-    GLuint shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
+    glEnable(GL_DEPTH_TEST);
 
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    GLuint VAO, VBO;
-
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);       // GL_STREAM - modified once and used once
-                                                                                     // GL_STATIC - modified once and used many times
-                                                                                     // GL_DYNAMIC - modified multiple times and used many times
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*) 0);
-    glEnableVertexAttribArray(0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    Camera camera(width, height, glm::vec3(0.0f, 0.0f, 2.0f));
 
     while (!glfwWindowShouldClose(window)) {
 
@@ -89,15 +76,18 @@ int main(void) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(shaderProgram);
-        glBindVertexArray(VAO);
+        shaderProgram.Activate();
+        camera.Inputs(window);
+        camera.Matrix(45.0f, 0.1f, 100.0f, shaderProgram, "camMatrix");
+        VAO1.Bind();
+
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glfwSwapBuffers(window);
     }
 
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteProgram(shaderProgram);
+    VAO1.Delete();
+    VBO1.Delete();
+    shaderProgram.Delete();
 
     glfwDestroyWindow(window);
     glfwTerminate();
