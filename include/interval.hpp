@@ -7,23 +7,23 @@
 
 #include "point.hpp"
 
-namespace triangle 
+namespace triangle
 {
 
 template <typename PointTy> class Triangle;
 template <typename PointTy> class Plane;
 
-template <typename PointTy = double> 
-class Interval 
+template <typename PointTy = double>
+class Interval
 {
 public:
     Point<PointTy> p1; // первая точка интервала
-    Point<PointTy> p2; // вторая точка интервала 
+    Point<PointTy> p2; // вторая точка интервала
 
 
     Interval() = default;
 
-    Interval(Point<PointTy> p1, Point<PointTy> p2) 
+    Interval(Point<PointTy> p1, Point<PointTy> p2)
     {
         this->p1 = p1;
         this->p2 = p2;
@@ -32,7 +32,7 @@ public:
     bool valid() const { return p1.valid() && p2.valid(); }
 
 
-    void print() const 
+    void print() const
     {
         std::cout << "{";
         p1.print_no_endl();
@@ -45,7 +45,7 @@ public:
 };
 
 template <typename PointTy = double>
-bool intersect_intervals(Interval<PointTy> &interval1, Interval<PointTy> &interval2) 
+bool intersect_intervals(Interval<PointTy> &interval1, Interval<PointTy> &interval2)
 {
     PointTy int1_min = std::min(interval1.p1.x, interval1.p2.x);
     PointTy int1_max = std::max(interval1.p1.x, interval1.p2.x);
@@ -53,14 +53,14 @@ bool intersect_intervals(Interval<PointTy> &interval1, Interval<PointTy> &interv
     PointTy int2_max = std::max(interval2.p1.x, interval2.p2.x);
 
     if (double_cmp(int1_min, int2_min) || double_cmp(int1_min, int2_max) ||
-        double_cmp(int1_max, int2_min) || double_cmp(int1_max, int2_max)) 
+        double_cmp(int1_max, int2_min) || double_cmp(int1_max, int2_max))
     {
-        return true; 
+        return true;
     }
 
     if ((int1_min >= int2_min && int1_min <= int2_max) ||
         (int1_max >= int2_min && int1_max <= int2_max) ||
-        (int2_min >= int1_min && int2_min <= int1_max)) 
+        (int2_min >= int1_min && int2_min <= int1_max))
     {
         return true;
     }
@@ -70,23 +70,23 @@ bool intersect_intervals(Interval<PointTy> &interval1, Interval<PointTy> &interv
 
 // ====================================================
 template <typename PointTy>
-void push_unique_point(std::vector<Point<PointTy>>& points, const Point<PointTy>& p) 
+void push_unique_point(std::vector<Point<PointTy>>& points, const Point<PointTy>& p)
 {
-    if (!p.valid()) 
+    if (!p.valid())
         return;
 
-    for (const auto& q : points) 
+    for (const auto& q : points)
     {
         if (double_cmp(p.x, q.x) &&
             double_cmp(p.y, q.y) &&
-            double_cmp(p.z, q.z)) 
+            double_cmp(p.z, q.z))
             return;
     }
 
     points.push_back(p);
 }
 
-// пересечение треугольника с плоскотью
+// пересечение треугольника с плоскоcтью
 template <typename PointTy>
 std::vector<Point<PointTy>> clip_triangle_with_plane(const Triangle<PointTy>& tri, const Plane<PointTy>& plane)
 {
@@ -95,7 +95,7 @@ std::vector<Point<PointTy>> clip_triangle_with_plane(const Triangle<PointTy>& tr
     const       PointTy  eps  = _epsilon;
 
     std::vector<Point<PointTy>> out;
-    for (int i = 0; i < 3; ++i) 
+    for (int i = 0; i < 3; ++i)
     {
         int j = (i + 1) % 3;
 
@@ -104,12 +104,12 @@ std::vector<Point<PointTy>> clip_triangle_with_plane(const Triangle<PointTy>& tr
 
         PointTy d1 = d[i], d2 = d[j];
 
-        // тыершины лежащие на плоскости 
+        // тыершины лежащие на плоскости
         if (std::abs(d1) <= eps) push_unique_point(out, P1);
         if (std::abs(d2) <= eps) push_unique_point(out, P2);
 
         // разные знаки —> ребро пересекает плоскость
-        if ((d1 > eps && d2 < -eps) || (d1 < -eps && d2 > eps)) 
+        if ((d1 > eps && d2 < -eps) || (d1 < -eps && d2 > eps))
         {
             PointTy t = d1 / (d1 - d2); // t (0,1)
             Point<PointTy> inter
@@ -124,7 +124,7 @@ std::vector<Point<PointTy>> clip_triangle_with_plane(const Triangle<PointTy>& tr
     }
 
     // редкие вырожденности (оставим две крайние точки)
-    if (out.size() > 2) 
+    if (out.size() > 2)
     {
         std::sort(out.begin(), out.end(),
                   [](const auto& a, const auto& b){ return a.x < b.x; });
@@ -139,36 +139,36 @@ std::vector<Point<PointTy>> clip_triangle_with_plane(const Triangle<PointTy>& tr
 template <typename PointTy>
 Interval<PointTy> interval_from_points(const std::vector<Point<PointTy>>& pts)
 {
-    if (pts.empty()) 
+    if (pts.empty())
         return Interval<PointTy>{};
 
-    if (pts.size() == 1) 
+    if (pts.size() == 1)
         return Interval<PointTy>{pts[0], pts[0]};
 
     return Interval<PointTy>{pts[0], pts[1]};
 }
 
-// собраем интервал из трёх кандидатных точек пересечения прямой с ребрами 
+// собраем интервал из трёх кандидатных точек пересечения прямой с ребрами
 template <typename PointTy = double>
 Interval<PointTy> get_valid_interval_of_triangle_and_line( const Triangle<PointTy> &triangle, const Point<PointTy> &inter_point1, const Point<PointTy> &inter_point2, const Point<PointTy> &inter_point3)
 {
     std::vector<Point<PointTy>> valid_points;
 
-    auto same_point = [](const Point<PointTy>& A, const Point<PointTy>& B) 
+    auto same_point = [](const Point<PointTy>& A, const Point<PointTy>& B)
     {
         return double_cmp(A.x, B.x) &&
                double_cmp(A.y, B.y) &&
                double_cmp(A.z, B.z);
     };
 
-    auto push_unique = [&](const Point<PointTy>& P) 
+    auto push_unique = [&](const Point<PointTy>& P)
     {
-        if (!P.valid()) 
+        if (!P.valid())
             return;
 
-        for (const auto& Q : valid_points) 
+        for (const auto& Q : valid_points)
         {
-            if (same_point(P, Q)) 
+            if (same_point(P, Q))
                 return; // уже есть
         }
 
@@ -182,27 +182,27 @@ Interval<PointTy> get_valid_interval_of_triangle_and_line( const Triangle<PointT
 
 
     // case 0: линия не попала в треугольник
-    if (valid_points.empty()) 
+    if (valid_points.empty())
     {
         return Interval<PointTy>{}; // невалидный интервал
     }
 
-    // case 1: одноточечное касание 
-    if (valid_points.size() == 1) 
+    // case 1: одноточечное касание
+    if (valid_points.size() == 1)
     {
         return Interval<PointTy>{valid_points[0], valid_points[0]}; // возвращаем вырожденный интервал p–p, чтобы дальше он считался пересечением
     }
 
     // case 2: нормальное пересечение в двух точках
-    if (valid_points.size() == 2) 
+    if (valid_points.size() == 2)
     {
         return Interval<PointTy>{valid_points[0], valid_points[1]};
     }
 
     // case 3: три точки —> одна из них повторяет вершину
-    auto dist2 = [](const Point<PointTy>& A, const Point<PointTy>& B) 
+    auto dist2 = [](const Point<PointTy>& A, const Point<PointTy>& B)
     {
-        return dot(A - B, A - B); // возьмём самую дальнюю пару 
+        return dot(A - B, A - B); // возьмём самую дальнюю пару
     };
 
     Point<PointTy> a = valid_points[0];
@@ -213,20 +213,20 @@ Interval<PointTy> get_valid_interval_of_triangle_and_line( const Triangle<PointT
     PointTy d_ac = dist2(a,c);
     PointTy d_bc = dist2(b,c);
 
-    if (d_ab >= d_ac && d_ab >= d_bc) 
+    if (d_ab >= d_ac && d_ab >= d_bc)
         return Interval<PointTy>{a, b};
-    
-    else if (d_ac >= d_ab && d_ac >= d_bc) 
+
+    else if (d_ac >= d_ab && d_ac >= d_bc)
         return Interval<PointTy>{a, c};
-    
-    else 
+
+    else
         return Interval<PointTy>{b, c};
-    
+
 }
 
 
 template <typename PointTy>
-Interval<PointTy> get_interval_by_plane_clip(const Triangle<PointTy>& tri, const Plane<PointTy>& other_plane) 
+Interval<PointTy> get_interval_by_plane_clip(const Triangle<PointTy>& tri, const Plane<PointTy>& other_plane)
 {
     auto pts = clip_triangle_with_plane(tri, other_plane);
 
