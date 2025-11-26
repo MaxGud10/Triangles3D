@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
-project(OpenGLProject)
+project(OpenGL)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 11)
+
+include_directories(${CMAKE_SOURCE_DIR}/../include)
+include_directories(${CMAKE_SOURCE_DIR}/../src)
 
 include_directories(include)
 
@@ -16,20 +19,28 @@ pkg_search_module(GLFW REQUIRED glfw3)
 set(GLAD_SOURCE src/glad.c)
 set(GLAD_INCLUDE include/glad)
 
-include_directories(${GLEW_INCLUDE_DIRS} ${GLFW_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS} ${GLAD_INCLUDE})
-link_directories(${GLEW_LIBRARY_DIRS} ${GLFW_LIBRARY_DIRS} ${GLUT_LIBRARY_DIRS})
+include_directories(
+    ${GLEW_INCLUDE_DIRS}
+    ${GLFW_INCLUDE_DIRS}
+    ${GLUT_INCLUDE_DIRS}
+    ${GLAD_INCLUDE}
+)
 
+link_directories(
+    ${GLEW_LIBRARY_DIRS}
+    ${GLFW_LIBRARY_DIRS}
+    ${GLUT_LIBRARY_DIRS}
+)
 
-# -------- function to create executables --------
 function(make_program name source)
     add_executable(${name} ${source})
-target_link_libraries(${name}
-    OpenGL::GL
-    GLU
-    ${GLEW_LIBRARIES}
-    ${GLFW_LIBRARIES}
-    ${GLUT_LIBRARIES}
-)
+    target_link_libraries(${name}
+        OpenGL::GL
+        GLU
+        ${GLEW_LIBRARIES}
+        ${GLFW_LIBRARIES}
+        ${GLUT_LIBRARIES}
+    )
 endfunction()
 
 set(MAIN_SOURCES
@@ -39,18 +50,19 @@ set(MAIN_SOURCES
     src/VBO.cpp
     src/EBO.cpp
     src/camera.cpp
+    ../src/config.cpp   
 )
 
 add_executable(main ${MAIN_SOURCES})
-target_link_libraries(main
-            OpenGL::GL
-            GLU
-            ${GLEW_LIBRARIES}
-            ${GLFW_LIBRARIES}
-            ${GLUT_LIBRARIES}
-            )
 
-# -------- individual programs --------
+target_link_libraries(main
+    OpenGL::GL
+    GLU
+    ${GLEW_LIBRARIES}
+    ${GLFW_LIBRARIES}
+    ${GLUT_LIBRARIES}
+)
+
 make_program(camera1 learnOpenGL/camera1.cpp)
 make_program(camera2 learnOpenGL/camera2.cpp)
 make_program(hello_triangle learnOpenGL/hello_triangle.cpp)

@@ -24,8 +24,16 @@ class Camera {
         glm::vec3 upDir  = glm::vec3(0.0f, 1.0f, 0.0f);
 
 
-        float speed = 0.1f;
-        float sensivity = 100.0f;
+        float speed     = 0.1f;
+        float sensivity = 0.1f;
+
+        float yaw       = -90.0f;
+        float pitch     = 0.0f;
+
+        float lastX;
+        float lastY;
+        bool  firstClick = true;
+
 
         Camera(int widthIn, int heightIn, glm::vec3 posIn) : width(widthIn), height(heightIn), camPos(posIn) {}
 

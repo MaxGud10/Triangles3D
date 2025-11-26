@@ -8,8 +8,8 @@ void Camera::Matrix(float FOVdeg, float nearPlane, float farPlane, Shader& shade
         upDir            // up direction vector
     );
     glm::mat4 projection = glm::perspective(
-        glm::radians(FOVdeg),                   // the fov angle
-        static_cast<float>(width / height),     // screen aspect
+        glm::radians(FOVdeg),                                     // the fov angle
+        static_cast<float>(width) / static_cast<float>(height),   // screen aspect
         nearPlane,
         farPlane);
 
@@ -38,10 +38,47 @@ void Camera::Inputs(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
         speed = 0.4f;
     }
-    else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) {
-        speed = 0.1f;
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+    {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+        double mouseX, mouseY;
+        glfwGetCursorPos(window, &mouseX, &mouseY);
+
+        if (firstClick)
+        {
+            lastX = mouseX;
+            lastY = mouseY;
+            firstClick = false;
+        }
+
+        float deltaX = mouseX - lastX;
+        float deltaY = lastY - mouseY;
+
+        lastX = mouseX;
+        lastY = mouseY;
+
+        yaw   += deltaX * sensivity;
+        pitch += deltaY * sensivity;
+
+        if (pitch > 89.0f) pitch = 89.0f;
+        if (pitch < -89.0f) pitch = -89.0f;
+
+        glm::vec3 direction;
+        direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+        direction.y = sin(glm::radians(pitch));
+        direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+        camDir = glm::normalize(direction);
+    }
+    else
+    {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        firstClick = true;
     }
 
 
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) {
+        speed = 0.1f;
+    }
 
 }
