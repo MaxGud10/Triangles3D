@@ -2,11 +2,8 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
   pull_request:
-    branches: [ main ]
 
-# быстрее сборки благодаря cache + ccache
 env:
   CCACHE_DIR: ${{ github.workspace }}/.ccache
   CTEST_OUTPUT_ON_FAILURE: 1
