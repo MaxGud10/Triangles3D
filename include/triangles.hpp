@@ -6,11 +6,7 @@
 #include "plane.hpp"
 #include "point.hpp"
 #include "vector.hpp"
-
-// enum class min_x_y_z
-// {
-    
-// };
+// #include "intersection.hpp"
 
 namespace triangle 
 {

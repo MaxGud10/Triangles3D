@@ -36,15 +36,15 @@ public:
 
     PointTy norm() const { return x * x + y * y + z * z; } // |p|^2
     
-    bool operator==(const Point<PointTy>& other) const
-    {
-        return x == other.x && y == other.y && z == other.z;
-    }
+    bool operator==(const Point<PointTy>& other) const = default;
+    // {
+    //     return x == other.x && y == other.y && z == other.z;
+    // }
 
-    bool operator!=(const Point<PointTy>& other) const
-    {
-        return !(*this == other);
-    }
+    // bool operator!=(const Point<PointTy>& other) const
+    // {
+    //     return !(*this == other);
+    // }
 
     bool almost_equal(const Point<PointTy>& other, PointTy eps = 1e-6) const
     {
@@ -63,13 +63,6 @@ public:
     {
       Point<PointTy> sub(x - other.x, y - other.y, z - other.z);
       return sub;
-    }
-
-    void operator=(const Point<PointTy> &other) 
-    {
-      x = other.x;
-      y = other.y;
-      z = other.z;
     }
 };
 

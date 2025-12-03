@@ -105,10 +105,7 @@ public:
     return false;
   }
 
-  bool operator==(const Plane<PointTy> &other) const
-  {
-      return A == other.A && B == other.B && C == other.C && D == other.D;
-  }
+  bool operator==(const Plane<PointTy> &other) const = default;
 
 
   PointTy get_A() const { return A; }

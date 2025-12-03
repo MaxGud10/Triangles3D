@@ -3,8 +3,10 @@
 #include <deque>
 #include <map>
 #include <vector>
+#include <list>
 
 #include "triangles.hpp"
+// #include "intersection.hpp"
 
 namespace triangle 
 {
