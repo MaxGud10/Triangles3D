@@ -24,9 +24,9 @@ public:
     PointTy y = NaN;
     PointTy z = NaN;
 
-    Point() = default; 
+    // Point() = default; 
 
-    Point(PointTy x, PointTy y, PointTy z) : x(x), y(y), z(z) {};
+    // Point(PointTy x, PointTy y, PointTy z) : x(x), y(y), z(z) {};
 
     void print() const 
     {

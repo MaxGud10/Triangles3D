@@ -21,13 +21,13 @@ public:
     Point<PointTy> p2; // вторая точка интервала
 
 
-    Interval() = default;
+    // Interval() = default;
 
-    Interval(Point<PointTy> p1, Point<PointTy> p2)
-    {
-        this->p1 = p1;
-        this->p2 = p2;
-    }
+    // Interval(Point<PointTy> p1, Point<PointTy> p2)
+    // {
+    //     this->p1 = p1;
+    //     this->p2 = p2;
+    // }
 
     bool valid() const { return p1.valid() && p2.valid(); }
 

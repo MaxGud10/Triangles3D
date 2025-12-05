@@ -16,8 +16,8 @@ public:
   Vector<PointTy> vector; // направляющий вектор
   Point<PointTy>  point;  // опорная точка P0 на линии
 
-  Line() = default;
-  Line(Vector<PointTy> v, Point<PointTy> p) : vector(v), point(p) {} // L(t) = P0 + t * d, где P0 = point, d = vector, t — вещественное число
+  // Line() = default;
+  // Line(Vector<PointTy> v, Point<PointTy> p) : vector(v), point(p) {} // L(t) = P0 + t * d, где P0 = point, d = vector, t — вещественное число
 
   bool valid() const { return vector.valid() && point.valid(); }
 
