@@ -7,7 +7,7 @@
 
 #include "triangles.hpp"
 #include "triangle_with_id.hpp"
-// #include "intersection.hpp"
+#include "intersection.hpp"
 
 namespace triangle 
 {

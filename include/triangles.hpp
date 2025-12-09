@@ -6,7 +6,7 @@
 #include "plane.hpp"
 #include "point.hpp"
 #include "vector.hpp"
-// #include "intersection.hpp"
+#include "intersection.hpp"
 
 namespace triangle 
 {
@@ -649,4 +649,4 @@ get_segment_space(const Point<PointTy> a, const Point<PointTy> b)
   return std::make_pair(min_vector, max_vector);
 }
 
-} // namespace triangle
+} // namespace triangleч
