@@ -15,19 +15,6 @@ public:
   PointTy y = NaN;
   PointTy z = NaN;
 
-  Vector() = default;
-
-  Vector(PointTy x, PointTy y, PointTy z) : x(x), y(y), z(z) {}
-
-  Vector(const Point<PointTy> &point1, const Point<PointTy> &point2) 
-  {
-    Point<PointTy> point = point1 - point2;
-
-    x = point.x;
-    y = point.y;
-    z = point.z;
-  }
-
   bool valid() const 
   {
     return !std::isnan(x) && !std::isnan(y) && !std::isnan(z);

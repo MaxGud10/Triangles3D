@@ -6,6 +6,7 @@
 #include <list>
 
 #include "triangles.hpp"
+#include "triangle_with_id.hpp"
 // #include "intersection.hpp"
 
 namespace triangle 
@@ -15,13 +16,14 @@ namespace triangle
 template <typename PointTy = double> 
 class BoundingBox 
 {
-  std::deque<Triangle<PointTy>> incell;
+  // std::deque<Triangle<PointTy>> incell;
+  std::deque<TriangleWithId<PointTy>> incell;
 
   Vector<PointTy> min;
   Vector<PointTy> max;
 
 public:
-  BoundingBox(const std::vector<Triangle<PointTy>> &triangles)
+  BoundingBox(const std::vector<TriangleWithId<PointTy>> &triangles)
   {
     incell.insert(incell.end(), triangles.begin(), triangles.end());
 
@@ -48,8 +50,8 @@ public:
   PointTy average_y() const { return (min.y + max.y) / static_cast<PointTy>(2); }
   PointTy average_z() const { return (min.z + max.z) / static_cast<PointTy>(2); }
 
-        std::deque<Triangle<PointTy>> &get_incell()       { return incell; }
-  const std::deque<Triangle<PointTy>> &get_incell() const { return incell; }
+        std::deque<TriangleWithId<PointTy>> &get_incell()       { return incell; }
+  const std::deque<TriangleWithId<PointTy>> &get_incell() const { return incell; }
 
   void group_intersections(std::map<size_t, size_t> &result) 
   {
@@ -60,10 +62,15 @@ public:
 
       for (auto two = it; two != incell.end(); ++two) 
       {
-        if (check_intersection(*one, *two)) 
+        // if (check_intersection(*one, *two)) 
+        // {
+        //   result[(*one).id] = (*one).id;
+        //   result[(*two).id] = (*two).id;
+        // }
+        if (check_intersection(one->tri, two->tri)) 
         {
-          result[(*one).id] = (*one).id;
-          result[(*two).id] = (*two).id;
+            result[one->id] = one->id;
+            result[two->id] = two->id;
         }
       }
     }
@@ -73,15 +80,16 @@ public:
 template <typename PointTy = double> 
 class Octotree 
 {
-  std::vector<Triangle<PointTy>>   input;
-  std::deque<BoundingBox<PointTy>> cells;
+  // std::vector<Triangle<PointTy>>   input;
+  std::vector<TriangleWithId<PointTy>> input;
+  std::deque <BoundingBox   <PointTy>> cells;
 
   size_t depth     = 0;
   size_t cells_num = 0;
   size_t triag_num = 0;
 
 public:
-  Octotree(const std::vector<Triangle<PointTy>> &triangles, const size_t triag_num) : input(triangles), triag_num(triag_num) 
+  Octotree(const std::vector<TriangleWithId<PointTy>> &triangles, const size_t triag_num) : input(triangles), triag_num(triag_num) 
   {
     cells.push_back(BoundingBox<PointTy>(input));
     depth = count_depth(triag_num);
@@ -111,8 +119,8 @@ public:
   {
     static int axis = 0;
 
-    std::vector<Triangle<PointTy>> plus;
-    std::vector<Triangle<PointTy>> minus;
+    std::vector<TriangleWithId<PointTy>> plus;
+    std::vector<TriangleWithId<PointTy>> minus;
 
     size_t copy_num_of_cells = cells_num;
 

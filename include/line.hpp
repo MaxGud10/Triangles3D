@@ -16,9 +16,6 @@ public:
   Vector<PointTy> vector; // направляющий вектор
   Point<PointTy>  point;  // опорная точка P0 на линии
 
-  // Line() = default;
-  // Line(Vector<PointTy> v, Point<PointTy> p) : vector(v), point(p) {} // L(t) = P0 + t * d, где P0 = point, d = vector, t — вещественное число
-
   bool valid() const { return vector.valid() && point.valid(); }
 
   void print() const 
@@ -33,8 +30,8 @@ public:
 template <typename PointTy = double>
 bool three_points_on_one_line(const Point<PointTy> &a, const Point<PointTy> &b, const Point<PointTy> &c)
 {
-    Vector<PointTy> AB{b, a}; 
-    Vector<PointTy> AC{c, a};
+    Vector<PointTy> AB = vector_from_point(b - a);
+    Vector<PointTy> AC = vector_from_point(c - a);
     Vector<PointTy> cr = cross(AB, AC);
 
     return double_cmp(cr.x,0.0) && double_cmp(cr.y,0.0) && double_cmp(cr.z,0.0);

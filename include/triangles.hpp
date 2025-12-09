@@ -16,7 +16,7 @@ class Triangle
 {
 public:
   enum TriangleType { NONE, POINT, LINE, TRIANGLE };
-  size_t id = 0;
+  // size_t id = 0;
 
 private:
   TriangleType type = NONE;
@@ -59,6 +59,8 @@ private:
   PointTy max_coord(int axis) const { return std::max({coord(a, axis), coord(b, axis), coord(c, axis)}); }
 
 public:
+  Triangle() = default;
+
   Triangle(const PointTy &x1, const PointTy &y1, const PointTy &z1,
            const PointTy &x2, const PointTy &y2, const PointTy &z2,
            const PointTy &x3, const PointTy &y3, const PointTy &z3)
@@ -111,16 +113,9 @@ public:
     c.print();
   }
 
-  Point<PointTy> get_a() const { return a; }
-  Point<PointTy> get_b() const { return b; }
-  Point<PointTy> get_c() const { return c; }
-
-  // PointTy min_x() const { return std::min(a.x, std::min(b.x, c.x)); }
-  // PointTy max_x() const { return std::max(a.x, std::max(b.x, c.x)); }
-  // PointTy min_y() const { return std::min(a.y, std::min(b.y, c.y)); }
-  // PointTy max_y() const { return std::max(a.y, std::max(b.y, c.y)); }
-  // PointTy min_z() const { return std::min(a.z, std::min(b.z, c.z)); }
-  // PointTy max_z() const { return std::max(a.z, std::max(b.z, c.z)); }
+  const Point<PointTy> &get_a() const { return a; }
+  const Point<PointTy> &get_b() const { return b; }
+  const Point<PointTy> &get_c() const { return c; }
 
   PointTy min_x() const { return min_coord(0); }
   PointTy max_x() const { return max_coord(0); }
@@ -237,9 +232,6 @@ bool intersect_triangle_with_triangle_in_3D(Triangle<PointTy> &t1, Triangle<Poin
                            get_planes_intersection_point (plane1, plane2)};
 
   // найдем интервалы пересечения треугольников с прямой пересечения плоскостей
-  // Interval interval1 = get_interval_of_triangle_and_line(inter_line, t1);
-  // Interval interval2 = get_interval_of_triangle_and_line(inter_line, t2);
-  // TODO: [x]
   auto interval1 = get_interval_by_plane_clip(t1, plane2); // плоскость T2 режет треугольник T1
   auto interval2 = get_interval_by_plane_clip(t2, plane1); // плоскость T1 режет треугольник T2
   if (!interval1.valid() || !interval2.valid()) 
@@ -460,9 +452,10 @@ static bool is_point_in_triangle(const Triangle<PointTy>& tri, const Point<Point
     if (!double_cmp(sd, 0.0)) return false;
 
     // барицентрические координаты ё
-    const Vector<PointTy> v0{tri.get_c(), tri.get_a()}; // C - A
-    const Vector<PointTy> v1{tri.get_b(), tri.get_a()}; // B - A
-    const Vector<PointTy> v2{point,       tri.get_a()}; // point - A
+    const Vector<PointTy> v0 = vector_from_point(tri.get_c() - tri.get_a()); // C - A
+    const Vector<PointTy> v1 = vector_from_point(tri.get_b() - tri.get_a()); // B - A
+    const Vector<PointTy> v2 = vector_from_point(point       - tri.get_a()); // point - A
+
 
     const PointTy dot00 = dot(v0, v0);
     const PointTy dot01 = dot(v0, v1);
@@ -489,8 +482,8 @@ static bool is_point_in_triangle(const Triangle<PointTy>& tri, const Point<Point
         // лежеит ли point на отрезке [x, y]
         auto on_segment = [&](const Point<PointTy>& X, const Point<PointTy>& Y) -> bool 
         {
-            const Vector<PointTy> XY{Y, X};
-            const Vector<PointTy> XP{point, X};
+            const Vector<PointTy> XY = vector_from_point(Y     - X);
+            const Vector<PointTy> XP = vector_from_point(point - X); 
 
             const auto cr = cross(XY, XP);
 

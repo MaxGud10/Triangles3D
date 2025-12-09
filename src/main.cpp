@@ -1,10 +1,12 @@
 #include "../include/octotree.hpp"
+#include "../include/triangle_with_id.hpp"
 
 int main() 
 {
   using PointTy = double;
 
-  std::vector<triangle::Triangle<PointTy>> input;
+  // std::vector<triangle::Triangle<PointTy>> input;
+  std::vector<triangle::TriangleWithId<PointTy>> input;
   size_t triag_num = 0;
   std::cin >> triag_num;
   input.reserve(triag_num);
@@ -17,9 +19,20 @@ int main()
 
     std::cin >> x1 >> y1 >> z1 >> x2 >> y2 >> z2 >> x3 >> y3 >> z3;
 
-    triangle::Triangle<PointTy> triangle(x1, y1, z1, x2, y2, z2, x3, y3, z3);
-    triangle.id = i;
-    input.push_back(triangle);
+    // triangle::Triangle<PointTy> triangle(x1, y1, z1, x2, y2, z2, x3, y3, z3);
+    // triangle.id = i;
+    // input.push_back(triangle);
+    triangle::TriangleWithId<PointTy> rec;
+
+    rec.tri = triangle::Triangle<PointTy>{
+        {x1, y1, z1},
+        {x2, y2, z2},
+        {x3, y3, z3}
+    };
+
+    rec.id = i;
+
+    input.push_back(rec);
   }
 
   triangle::Octotree<PointTy> octotree(input, triag_num);
