@@ -16,16 +16,19 @@ namespace triangle
 template <typename PointTy = double> 
 class BoundingBox 
 {
-  // std::deque<Triangle<PointTy>> incell;
   std::deque<TriangleWithId<PointTy>> incell;
 
   Vector<PointTy> min;
   Vector<PointTy> max;
 
 public:
-  BoundingBox(const std::vector<TriangleWithId<PointTy>> &triangles)
+  template <typename Iter>
+  BoundingBox(Iter first, Iter last)
   {
-    incell.insert(incell.end(), triangles.begin(), triangles.end());
+    incell.insert(incell.end(), first, last);
+
+    if (incell.empty())
+            return;
 
     auto it = incell.begin();
 
@@ -62,11 +65,6 @@ public:
 
       for (auto two = it; two != incell.end(); ++two) 
       {
-        // if (check_intersection(*one, *two)) 
-        // {
-        //   result[(*one).id] = (*one).id;
-        //   result[(*two).id] = (*two).id;
-        // }
         if (check_intersection(one->tri, two->tri)) 
         {
             result[one->id] = one->id;
@@ -80,22 +78,21 @@ public:
 template <typename PointTy = double> 
 class Octotree 
 {
-  // std::vector<Triangle<PointTy>>   input;
   std::vector<TriangleWithId<PointTy>> input;
   std::deque <BoundingBox   <PointTy>> cells;
 
   size_t depth     = 0;
   size_t cells_num = 0;
-  size_t triag_num = 0;
+  size_t axis      = 0;
 
 public:
-  Octotree(const std::vector<TriangleWithId<PointTy>> &triangles, const size_t triag_num) : input(triangles), triag_num(triag_num) 
+  Octotree(const std::vector<TriangleWithId<PointTy>> &triangles) : input(triangles)
   {
-    cells.push_back(BoundingBox<PointTy>(input));
-    depth = count_depth(triag_num);
-
-    ++cells_num;
-  };
+      cells.emplace_back (input.begin(), input.end());
+      depth = count_depth(input.size());
+      
+      ++cells_num;
+  }
 
   size_t count_depth(const size_t &triag_num) const 
   {
@@ -108,17 +105,14 @@ public:
     if (triag_num < 100000)
       return 2;
 
-    return 3;
+    return 3; // максимальная глубина дерева 
   }
 
 
   const std::deque<BoundingBox<PointTy>> &get_cells() { return cells; }
 
-
   void divide_cell() 
   {
-    static int axis = 0;
-
     std::vector<TriangleWithId<PointTy>> plus;
     std::vector<TriangleWithId<PointTy>> minus;
 
@@ -159,14 +153,14 @@ public:
       {
         if (!plus.empty()) 
         {
-          cells.push_back(BoundingBox<PointTy>(plus));
+          cells.emplace_back(plus.begin(), plus.end());
 
           ++cells_num;
         }
 
         if (!minus.empty()) 
         {
-          cells.push_back(BoundingBox<PointTy>(minus));
+          cells.emplace_back(minus.begin(), minus.end());
 
           ++cells_num;
         }

@@ -6,9 +6,8 @@ namespace triangle
 {
 
 template <typename PointTy = double> 
-class Vector 
+struct Vector 
 {
-public:
   static constexpr PointTy NaN = std::numeric_limits<PointTy>::quiet_NaN();
 
   PointTy x = NaN;
@@ -82,34 +81,20 @@ PointTy dot(const Point<PointTy> &point1, const Point<PointTy> &point2)
          point1.z * point2.z;
 }
 
-
+// v×w = (y1z2 − z1y2, z1x2 − x1z2, x1y2 − y1x2).
 template <typename PointTy = double>
 Vector<PointTy> cross(const Vector<PointTy> &vector1, const Vector<PointTy> &vector2) 
 {
-  Vector<PointTy> vector(vector1.y * vector2.z - vector1.z * vector2.y,
-                         vector1.z * vector2.x - vector1.x * vector2.z,
-                         vector1.x * vector2.y - vector1.y * vector2.x);
-
-  return vector;
-}
-
-// v×w = (y1z2 − z1y2, z1x2 − x1z2, x1y2 − y1x2).
-template <typename PointTy = double>
-Vector<PointTy> cross(const Vector<PointTy> &vector, const Point<PointTy> &point) 
-{
-  Vector<PointTy> vec(vector.y * point.z - vector.z * point.y,
-                      vector.z * point.x - vector.x * point.z,
-                      vector.x * point.y - vector.y * point.x);
-
-  return vec;
+  return { vector1.y * vector2.z - vector1.z * vector2.y,
+           vector1.z * vector2.x - vector1.x * vector2.z,
+           vector1.x * vector2.y - vector1.y * vector2.x
+  };
 }
 
 template <typename PointTy = double>
 Vector<PointTy> vector_from_point(const Point<PointTy> &point) 
 {
-  Vector<PointTy> vector{point.x, point.y, point.z};
-
-  return vector;
+  return { point.x, point.y, point.z };
 }
 
 } // namespace triangle

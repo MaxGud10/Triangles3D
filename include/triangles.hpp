@@ -16,7 +16,6 @@ class Triangle
 {
 public:
   enum TriangleType { NONE, POINT, LINE, TRIANGLE };
-  // size_t id = 0;
 
 private:
   TriangleType type = NONE;
@@ -60,30 +59,6 @@ private:
 
 public:
   Triangle() = default;
-
-  Triangle(const PointTy &x1, const PointTy &y1, const PointTy &z1,
-           const PointTy &x2, const PointTy &y2, const PointTy &z2,
-           const PointTy &x3, const PointTy &y3, const PointTy &z3)
-      : a(Point<PointTy>(x1, y1, z1)), b(Point<PointTy>(x2, y2, z2)),
-        c(Point<PointTy>(x3, y3, z3)) 
-  {
-    if (a.norm() <= b.norm()) 
-    {
-      std::swap(a, b);
-    }
-
-    if (a.norm() <= c.norm()) 
-    {
-      std::swap(a, c);
-    }
-
-    if (b.norm() <= c.norm()) 
-    {
-      std::swap(b, c);
-    }
-
-    validate();
-  }
 
   Triangle(const Point<PointTy> &p1, const Point<PointTy> &p2, const Point<PointTy> &p3)
          : a(p1),                    b(p2),                    c(p3) 
@@ -443,7 +418,7 @@ bool intersect_triangle_with_point(const Triangle<PointTy> t1, const Triangle<Po
 
 // находится ли точка внутри треугольника
 template <typename PointTy>
-static bool is_point_in_triangle(const Triangle<PointTy>& tri, const Point<PointTy>& point)
+bool is_point_in_triangle(const Triangle<PointTy>& tri, const Point<PointTy>& point)
 {
     // проверяем копланарность
     Plane<PointTy> pl(tri.get_a(), tri.get_b(), tri.get_c());
@@ -494,12 +469,12 @@ static bool is_point_in_triangle(const Triangle<PointTy>& tri, const Point<Point
                 return false;
 
             // точка в пределах проекционного AABB с допуском
-            const PointTy minx = std::min(X.x, Y.x) - _epsilon;
-            const PointTy maxx = std::max(X.x, Y.x) + _epsilon;
-            const PointTy miny = std::min(X.y, Y.y) - _epsilon;
-            const PointTy maxy = std::max(X.y, Y.y) + _epsilon;
-            const PointTy minz = std::min(X.z, Y.z) - _epsilon;
-            const PointTy maxz = std::max(X.z, Y.z) + _epsilon;
+            const PointTy minx = std::min(X.x, Y.x) - epsilon;
+            const PointTy maxx = std::max(X.x, Y.x) + epsilon;
+            const PointTy miny = std::min(X.y, Y.y) - epsilon;
+            const PointTy maxy = std::max(X.y, Y.y) + epsilon;
+            const PointTy minz = std::min(X.z, Y.z) - epsilon;
+            const PointTy maxz = std::max(X.z, Y.z) + epsilon;
 
             return (point.x >= minx && point.x <= maxx &&
                     point.y >= miny && point.y <= maxy &&
@@ -516,7 +491,7 @@ static bool is_point_in_triangle(const Triangle<PointTy>& tri, const Point<Point
     const PointTy v   = (dot00 * dot12 - dot01 * dot02) * inv;
 
     // немного расширяем границы на eps, чтобы устойчиво считать точку на ребре «внутри»
-    const PointTy eps = _epsilon * 10;
+    const PointTy eps = epsilon * 10;
     if (u >= -eps && v >= -eps && (u + v) <= (1.0 + eps)) 
       return true;
 

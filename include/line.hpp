@@ -10,11 +10,10 @@ namespace triangle
 template <typename PointTy> class Triangle;
 
 template <typename PointTy = double> 
-class Line 
+struct Line 
 {
-public:
   Vector<PointTy> vector; // направляющий вектор
-  Point<PointTy>  point;  // опорная точка P0 на линии
+  Point <PointTy> point; // опорная точка P0 на линии
 
   bool valid() const { return vector.valid() && point.valid(); }
 
