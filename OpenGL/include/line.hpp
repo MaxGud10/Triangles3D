@@ -7,10 +7,11 @@ namespace triangle
 
 template <typename PointTy> class Triangle;
 
-template <typename PointTy = double> struct Line 
+template <typename PointTy = double> 
+struct Line 
 {
   Vector<PointTy> vector;
-  Point<PointTy> point;
+  Point<PointTy>  point;
 
   bool valid() const 
   {
@@ -24,16 +25,7 @@ template <typename PointTy = double> struct Line
     std::cout << "z = " << vector.z << "t + " << point.z << std::endl;
   }
 
-  bool operator==(const Line<PointTy> &other) const 
-  {
-    Vector<PointTy> cross_res = cross(point - other.point, other.vector);
-    if (cmp(cross_res.x, 0.0) && cmp(cross_res.y, 0.0) && cmp(cross_res.z, 0.0)) 
-    {
-      return true;
-    }
-
-    return false;
-  }
+  bool operator==(const Line<PointTy> &other) const = default;
 };
 
 // inter_line = P0 + s*d0; line = P1 + t*d1

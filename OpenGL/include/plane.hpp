@@ -69,7 +69,7 @@ public:
 
     bool operator==(const Plane<PointTy> &other) const 
     {
-        // Checking for alignment of planes with precision to the sign
+        // сhecking for alignment of planes with precision to the sign
         if ((cmp( A, other.A) && cmp(B, other.B) && cmp(C, other.C) &&
              cmp( D, other.D)) ||
             (cmp(-A, other.A) && cmp(-B, other.B) && cmp(-C, other.C) &&
