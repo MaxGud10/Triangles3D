@@ -16,7 +16,14 @@ int main()
     PointTy x2 = 0, y2 = 0, z2 = 0;
     PointTy x3 = 0, y3 = 0, z3 = 0;
 
-    std::cin >> x1 >> y1 >> z1 >> x2 >> y2 >> z2 >> x3 >> y3 >> z3;
+    if (!(std::cin >> x1 >> y1 >> z1
+                   >> x2 >> y2 >> z2
+                   >> x3 >> y3 >> z3)) 
+    {
+      std::cerr << "Input error: see README for correct usage";
+
+      return 1;
+    }
 
     triangle::TriangleWithId<PointTy> rec;
 

@@ -156,29 +156,29 @@ Point<PointTy> get_planes_intersection_point(const Plane<PointTy> &plane1, const
 
   // A1x + B1y = -D1
   // A2x + B2y = -D2
-  if (!double_cmp(determinant_z_zero, 0.0)) 
+  if (!double_cmp(determinant_z_zero, PointTy{0})) 
   {
     x = (plane1.get_B() * plane2.get_D() - plane2.get_B() * plane1.get_D()) / determinant_z_zero;
     y = (plane2.get_A() * plane1.get_D() - plane1.get_A() * plane2.get_D()) / determinant_z_zero;
-    z = 0.0;
+    z = PointTy{0};
   }
 
   // A1x + С1z = -D1
   // A2x + С2z = -D2
-  else if (!double_cmp(determinant_y_zero, 0.0)) 
+  else if (!double_cmp(determinant_y_zero, PointTy{0})) 
   {
     x = (plane1.get_C() * plane2.get_D() - plane2.get_C() * plane1.get_D()) / determinant_y_zero;
     z = (plane2.get_A() * plane1.get_D() - plane1.get_A() * plane2.get_D()) / determinant_y_zero;
-    y = 0.0;
+    y = PointTy{0};
   }
 
   // B1y + С1z = -D1
   // B2y + С2z = -D2
-  else if (!double_cmp(determinant_x_zero, 0.0)) 
+  else if (!double_cmp(determinant_x_zero, PointTy{0})) 
   {
     y = (plane1.get_C() * plane2.get_D() - plane2.get_C() * plane1.get_D()) / determinant_x_zero;
     z = (plane2.get_B() * plane1.get_D() - plane1.get_B() * plane2.get_D()) / determinant_x_zero;
-    x = 0.0;
+    x = PointTy{0};
   }
 
   Point<PointTy> intersectionPoint = {x, y, z};

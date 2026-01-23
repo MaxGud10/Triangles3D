@@ -6,7 +6,6 @@
 #include "plane.hpp"
 #include "point.hpp"
 #include "vector.hpp"
-#include "intersection.hpp"
 
 namespace triangle 
 {
@@ -61,7 +60,7 @@ public:
   Triangle() = default;
 
   Triangle(const Point<PointTy> &p1, const Point<PointTy> &p2, const Point<PointTy> &p3)
-         : a(p1),                    b(p2),                    c(p3) 
+                             : a(p1),                    b(p2),                    c(p3) 
   {
     if (a.norm() <= b.norm()) 
     {
@@ -102,58 +101,58 @@ public:
   TriangleType get_type() const { return type; }
 };
 
-template <typename PointTy = double>
-bool check_intersection(Triangle<PointTy> &t1, Triangle<PointTy> &t2) 
-{
-  using TYPE = typename Triangle<PointTy>::TriangleType;
+// template <typename PointTy = double>
+// bool check_intersection(Triangle<PointTy> &t1, Triangle<PointTy> &t2) 
+// {
+//   using TYPE = typename Triangle<PointTy>::TriangleType;
 
-  TYPE type1 = t1.get_type();
-  TYPE type2 = t2.get_type();
+//   TYPE type1 = t1.get_type();
+//   TYPE type2 = t2.get_type();
 
-  if (type1 == TYPE::TRIANGLE && type2 == TYPE::TRIANGLE) 
-  {
-    return intersect_triangle_with_triangle_in_3D(t1, t2);
-  }
+//   if (type1 == TYPE::TRIANGLE && type2 == TYPE::TRIANGLE) 
+//   {
+//     return intersect_triangle_with_triangle_in_3D(t1, t2);
+//   }
 
-  if (type1 == TYPE::TRIANGLE && type2 == TYPE::LINE) 
-  {
-    return intersect_triangle_with_line_in_3D(t1, t2);
-  } 
-  else if (type1 == TYPE::LINE && type2 == TYPE::TRIANGLE) 
-  {
-    return intersect_triangle_with_line_in_3D(t2, t1);
-  }
+//   if (type1 == TYPE::TRIANGLE && type2 == TYPE::LINE) 
+//   {
+//     return intersect_triangle_with_line_in_3D(t1, t2);
+//   } 
+//   else if (type1 == TYPE::LINE && type2 == TYPE::TRIANGLE) 
+//   {
+//     return intersect_triangle_with_line_in_3D(t2, t1);
+//   }
 
-  if (type1 == TYPE::TRIANGLE && type2 == TYPE::POINT) 
-  {
-    return intersect_triangle_with_point(t1, t2);
-  } 
-  else if (type1 == TYPE::POINT && type2 == TYPE::TRIANGLE) 
-  {
-    return intersect_triangle_with_point(t2, t1);
-  }
+//   if (type1 == TYPE::TRIANGLE && type2 == TYPE::POINT) 
+//   {
+//     return intersect_triangle_with_point(t1, t2);
+//   } 
+//   else if (type1 == TYPE::POINT && type2 == TYPE::TRIANGLE) 
+//   {
+//     return intersect_triangle_with_point(t2, t1);
+//   }
 
-  if (type1 == TYPE::LINE && type2 == TYPE::LINE) 
-  {
-    return intersect_line_with_line(t1, t2);
-  }
+//   if (type1 == TYPE::LINE && type2 == TYPE::LINE) 
+//   {
+//     return intersect_line_with_line(t1, t2);
+//   }
 
-  if (type1 == TYPE::LINE && type2 == TYPE::POINT) 
-  {
-    return intersect_line_with_point(t1, t2);
-  } 
-  else if (type1 == TYPE::POINT && type2 == TYPE::LINE) 
-  {
-    return intersect_line_with_point(t2, t1);
-  }
+//   if (type1 == TYPE::LINE && type2 == TYPE::POINT) 
+//   {
+//     return intersect_line_with_point(t1, t2);
+//   } 
+//   else if (type1 == TYPE::POINT && type2 == TYPE::LINE) 
+//   {
+//     return intersect_line_with_point(t2, t1);
+//   }
 
-  if (type1 == TYPE::POINT && type2 == TYPE::POINT) 
-  {
-    return t1.get_a() == t2.get_a();
-  }
+//   if (type1 == TYPE::POINT && type2 == TYPE::POINT) 
+//   {
+//     return t1.get_a() == t2.get_a();
+//   }
 
-  return false;
-}
+//   return false;
+// }
 
 template <typename PointTy = double>
 bool intersect_triangle_with_triangle_in_3D(Triangle<PointTy> &t1, Triangle<PointTy> &t2) 
@@ -176,8 +175,8 @@ bool intersect_triangle_with_triangle_in_3D(Triangle<PointTy> &t1, Triangle<Poin
   // расстояния вершин до плоскостей
   auto same_strict_sign = [](PointTy x, PointTy y, PointTy z) 
   {
-    auto pos = [](PointTy v) { return v > 0.0 && !double_cmp(v, 0.0); };
-    auto neg = [](PointTy v) { return v < 0.0 && !double_cmp(v, 0.0); };
+    auto pos = [](PointTy v) { return v > PointTy{0} && !double_cmp(v, PointTy{0}); };
+    auto neg = [](PointTy v) { return v < PointTy{0} && !double_cmp(v, PointTy{0}); };
 
     bool all_pos = pos(x) && pos(y) && pos(z);
     bool all_neg = neg(x) && neg(y) && neg(z);
@@ -257,7 +256,7 @@ bool intersect_triangle_with_triangle_in_2D(Triangle<PointTy> &t1, Triangle<Poin
     excluded_axis_index = 2; // // работаем с парами (x,y)
 
 
-  auto project_point_to_2d = [excluded_axis_index](const Point<PointTy>& p)->std::pair<double,double>
+  auto project_point_to_2d = [excluded_axis_index](const Point<PointTy>& p)->std::pair<PointTy, PointTy>
   {
     if (excluded_axis_index == 0)  return { p.y, p.z }; // (y, z)
     if (excluded_axis_index == 1)  return { p.x, p.z }; // (x, z)
@@ -286,7 +285,7 @@ bool intersect_triangle_with_triangle_in_2D(Triangle<PointTy> &t1, Triangle<Poin
                                      PointTy px, PointTy py)
   {
     PointTy area = (bx-ax)*(py-ay) - (by-ay)*(px-ax);
-    if (!double_cmp(area, 0.0)) 
+    if (!double_cmp(area, PointTy{0})) 
       return false; // не коллинеарны 
 
     PointTy minx = std::min(ax,bx), maxx = std::max(ax,bx);
@@ -306,8 +305,9 @@ bool intersect_triangle_with_triangle_in_2D(Triangle<PointTy> &t1, Triangle<Poin
     PointTy o3 = oriented_area_2d(cx,cy,dx,dy,ax,ay);
     PointTy o4 = oriented_area_2d(cx,cy,dx,dy,bx,by);
 
-    bool sep1 = (o1 > 0.0 && o2 < 0.0) || (o1 < 0.0 && o2 > 0.0);
-    bool sep2 = (o3 > 0.0 && o4 < 0.0) || (o3 < 0.0 && o4 > 0.0);
+    const PointTy zero{0};
+    bool sep1 = (o1 > zero && o2 < zero) || (o1 < zero && o2 > zero);
+    bool sep2 = (o3 > zero && o4 < zero) || (o3 < zero && o4 > zero);
 
     if (sep1 && sep2) return true; // отрезки пересекаются в общем положении
 
@@ -331,12 +331,13 @@ bool intersect_triangle_with_triangle_in_2D(Triangle<PointTy> &t1, Triangle<Poin
     PointTy o2 = oriented_area_2d(B.first,B.second,C.first,C.second,px,py);
     PointTy o3 = oriented_area_2d(C.first,C.second,A.first,A.second,px,py);
 
-    bool pos1 = o1 > 0.0 && !double_cmp(o1,0.0);
-    bool pos2 = o2 > 0.0 && !double_cmp(o2,0.0);
-    bool pos3 = o3 > 0.0 && !double_cmp(o3,0.0);
-    bool neg1 = o1 < 0.0 && !double_cmp(o1,0.0);
-    bool neg2 = o2 < 0.0 && !double_cmp(o2,0.0);
-    bool neg3 = o3 < 0.0 && !double_cmp(o3,0.0);
+    const PointTy zero{0};
+    bool pos1 = o1 > zero && !double_cmp(o1, zero);
+    bool pos2 = o2 > zero && !double_cmp(o2, zero);
+    bool pos3 = o3 > zero && !double_cmp(o3, zero);
+    bool neg1 = o1 < zero && !double_cmp(o1, zero);
+    bool neg2 = o2 < zero && !double_cmp(o2, zero);
+    bool neg3 = o3 < zero && !double_cmp(o3, zero);
 
     bool has_pos = pos1 || pos2 || pos3;
     bool has_neg = neg1 || neg2 || neg3;
@@ -377,7 +378,7 @@ bool intersect_triangle_with_line_in_3D(const Triangle<PointTy> &t1, const Trian
   Vector<PointTy> p  = cross(line.vector, e2);
          PointTy det = dot(p, e1);
 
-  if (double_cmp(det, 0.0)) 
+  if (double_cmp(det, PointTy{0})) 
   {
     // берем две разные точки вырожденного треугольника t2 как концы сегмента
     Point<PointTy> p = t2.get_a();
@@ -392,19 +393,19 @@ bool intersect_triangle_with_line_in_3D(const Triangle<PointTy> &t1, const Trian
 
   Vector<PointTy> s = vector_from_point(line.point - t1.get_a());
          PointTy  u = dot(s, p) / det;
-  if (u < 0.0 || u > 1.0)
+  if (u < PointTy{0} || u > PointTy{1})
     return false;
 
   Vector<PointTy> q = cross(s, e1);
         PointTy   v = dot(line.vector, q) / det;
-  if (v < 0.0 || v > 1.0)
+  if (v < PointTy{0} || v > PointTy{1})
     return false;
 
   PointTy t = dot(e2, q) / det;
-  if (t < 0.0 || t > 1.0)
+  if (t < PointTy{0} || t > PointTy{1})
     return false;
 
-  if ((u + v) > 1.0)
+  if ((u + v) > PointTy{1}) 
     return false;
 
   return true;
@@ -424,7 +425,7 @@ bool is_point_in_triangle(const Triangle<PointTy>& tri, const Point<PointTy>& po
     Plane<PointTy> pl(tri.get_a(), tri.get_b(), tri.get_c());
     const auto sd = pl.substitute(point);
 
-    if (!double_cmp(sd, 0.0)) return false;
+    if (!double_cmp(sd, PointTy{0})) return false;
 
     // барицентрические координаты ё
     const Vector<PointTy> v0 = vector_from_point(tri.get_c() - tri.get_a()); // C - A
@@ -440,7 +441,7 @@ bool is_point_in_triangle(const Triangle<PointTy>& tri, const Point<PointTy>& po
 
     // для вырожденого треуголника: проверяем попадание на одно из рёбер / вершины
     const PointTy denom = dot00 * dot11 - dot01 * dot01;
-    if (double_cmp(denom, 0.0)) 
+    if (double_cmp(denom, PointTy{0})) 
     {
         // вырожденный треугольник: point лежит на каком-то ребре/вершине?
         const auto& A = tri.get_a();
@@ -463,9 +464,9 @@ bool is_point_in_triangle(const Triangle<PointTy>& tri, const Point<PointTy>& po
             const auto cr = cross(XY, XP);
 
             // коллинеарность 
-            if (!double_cmp(cr.x, 0.0) ||
-                !double_cmp(cr.y, 0.0) ||
-                !double_cmp(cr.z, 0.0)) 
+            if (!double_cmp(cr.x, PointTy{0}) ||
+                !double_cmp(cr.y, PointTy{0}) ||
+                !double_cmp(cr.z, PointTy{0})) 
                 return false;
 
             // точка в пределах проекционного AABB с допуском
@@ -486,18 +487,18 @@ bool is_point_in_triangle(const Triangle<PointTy>& tri, const Point<PointTy>& po
     }
 
     // невырожденный случай: u,v в пределах треугольника
-    const PointTy inv = 1.0 / denom;
+    const PointTy inv = PointTy{1} / denom;
     const PointTy u   = (dot11 * dot02 - dot01 * dot12) * inv;
     const PointTy v   = (dot00 * dot12 - dot01 * dot02) * inv;
 
     // немного расширяем границы на eps, чтобы устойчиво считать точку на ребре «внутри»
     const PointTy eps = epsilon * 10;
-    if (u >= -eps && v >= -eps && (u + v) <= (1.0 + eps)) 
+    if (u >= -eps && v >= -eps && (u + v) <= (PointTy{1} + eps)) 
       return true;
 
-    return (double_cmp(u, 0.0) || u > 0) &&
-           (double_cmp(v, 0.0) || v > 0) &&
-           (double_cmp(u + v, 1.0) || (u + v) < 1.0 + eps);
+    return (double_cmp(u,     PointTy{0}) || u > 0) &&
+           (double_cmp(v,     PointTy{0}) || v > 0) &&
+           (double_cmp(u + v, PointTy{1}) || (u + v) < PointTy{1} + eps);
 }
 
 
@@ -590,7 +591,7 @@ bool check_if_inter_point_belongs_space(const Point<PointTy> &min1, const Point<
 template <typename PointTy = double>
 bool intersect_triangle_with_segment_in_2D(const Triangle<PointTy> &t, const Line<PointTy> &line, const Point<PointTy> &seg_min, const Point<PointTy> &seg_max) 
 {
-  Line<PointTy> line1{vector_from_point(t.get_b() - t.get_a()), t.get_a()};
+  Line <PointTy> line1{vector_from_point(t.get_b() - t.get_a()), t.get_a()};
   Point<PointTy> point1 = intersect_line_with_line(line, line1);
   if (check_if_inter_point_belongs_sides(t.get_a(), t.get_b(), seg_min, seg_max,point1)) 
   {
@@ -649,4 +650,4 @@ get_segment_space(const Point<PointTy> a, const Point<PointTy> b)
   return std::make_pair(min_vector, max_vector);
 }
 
-} // namespace triangleч
+} // namespace triangles

@@ -1,8 +1,8 @@
-#include "../include/config.hpp"
+// #include "../include/config.hpp"
 
-namespace triangle 
-{
+// namespace triangle 
+// {
 
-bool double_cmp(double x, double y) { return std::fabs(x - y) <= epsilon; }
+// bool double_cmp(double x, double y) { return std::fabs(x - y) <= epsilon; }
 
-} // namespace triangle
+// } // namespace triangle
