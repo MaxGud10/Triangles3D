@@ -1,5 +1,5 @@
-#include "../include/octotree.hpp"
-#include "../include/triangle_with_id.hpp"
+#include "octotree.hpp"
+#include "triangle_with_id.hpp"
 
 int main() 
 {

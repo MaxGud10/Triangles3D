@@ -37,11 +37,9 @@ public:
 template <typename PointTy = double>
 bool intersect_intervals(Interval<PointTy> &interval1, Interval<PointTy> &interval2)
 {
-    PointTy int1_min = std::min(interval1.p1.x, interval1.p2.x);
-    PointTy int1_max = std::max(interval1.p1.x, interval1.p2.x);
-    PointTy int2_min = std::min(interval2.p1.x, interval2.p2.x);
-    PointTy int2_max = std::max(interval2.p1.x, interval2.p2.x);
-
+    auto [int1_min, int1_max] = std::minmax(interval1.p1.x, interval1.p2.x);
+    auto [int2_min, int2_max] = std::minmax(interval2.p1.x, interval2.p2.x);
+    
     if (double_cmp(int1_min, int2_min) || double_cmp(int1_min, int2_max) ||
         double_cmp(int1_max, int2_min) || double_cmp(int1_max, int2_max))
     {

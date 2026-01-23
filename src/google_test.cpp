@@ -1,9 +1,8 @@
 #include <gtest/gtest.h>
 
-#include "../include/config.hpp"
-#include "../include/triangles.hpp"
+#include "config.hpp"
+#include "triangles.hpp"
 
-// bool double_cmp(double x, double y) { return fabs(x - y) < epsilon; }
 
 TEST(TriangleWithTriangle, Intersection2D_1) {
   triangle::Point t1p1{0.4, -5.0, 0.0};

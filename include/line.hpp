@@ -38,16 +38,14 @@ bool three_points_on_one_line(const Point<PointTy> &a, const Point<PointTy> &b, 
 
 // лежит ли точка на прямой
 template <typename PointTy = double>
-bool is_point_on_line(const Point<PointTy> &point, const Line<PointTy> &line) // TODO: проверить на логику функцию
+bool is_point_on_line(const Point<PointTy> &point, const Line<PointTy> &line)
 {
-  if (double_cmp(line.vector.x * point.x + line.point.x, PointTy{0}) &&
-      double_cmp(line.vector.y * point.y + line.point.y, PointTy{0}) &&
-      double_cmp(line.vector.z * point.z + line.point.z, PointTy{0})) 
-  {
-    return true;
-  }
+    Vector<PointTy> v  = vector_from_point(point - line.point);
+    Vector<PointTy> cr = cross(v, line.vector);
 
-  return false;
+    return double_cmp(cr.x, PointTy{0}) &&
+           double_cmp(cr.y, PointTy{0}) &&
+           double_cmp(cr.z, PointTy{0});
 }
 
 

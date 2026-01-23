@@ -492,7 +492,7 @@ bool is_point_in_triangle(const Triangle<PointTy>& tri, const Point<PointTy>& po
     const PointTy v   = (dot00 * dot12 - dot01 * dot02) * inv;
 
     // немного расширяем границы на eps, чтобы устойчиво считать точку на ребре «внутри»
-    const PointTy eps = epsilon * 10;
+    const PointTy eps = PointTy(epsilon) * PointTy{10};
     if (u >= -eps && v >= -eps && (u + v) <= (PointTy{1} + eps)) 
       return true;
 
@@ -620,29 +620,26 @@ template <typename PointTy = double>
 std::pair<Point<PointTy>, Point<PointTy>>
 get_triangle_space(const Triangle<PointTy> t) 
 {
-  PointTy min_x = std::min(t.get_a().x, std::min(t.get_b().x, t.get_c().x));
-  PointTy max_x = std::max(t.get_a().x, std::max(t.get_b().x, t.get_c().x));
-  PointTy min_y = std::min(t.get_a().y, std::min(t.get_b().y, t.get_c().y));
-  PointTy max_y = std::max(t.get_a().y, std::max(t.get_b().y, t.get_c().y));
-  PointTy min_z = std::min(t.get_a().z, std::min(t.get_b().z, t.get_c().z));
-  PointTy max_z = std::max(t.get_a().z, std::max(t.get_b().z, t.get_c().z));
+  const PointTy min_x = std::min({t.get_a().x, t.get_b().x, t.get_c().x});
+  const PointTy max_x = std::max({t.get_a().x, t.get_b().x, t.get_c().x});
 
-  Point<PointTy> min_vector{min_x, min_y, min_z};
-  Point<PointTy> max_vector{max_x, max_y, max_z};
+  const PointTy min_y = std::min({t.get_a().y, t.get_b().y, t.get_c().y});
+  const PointTy max_y = std::max({t.get_a().y, t.get_b().y, t.get_c().y});
 
-  return std::make_pair(min_vector, max_vector);
+  const PointTy min_z = std::min({t.get_a().z, t.get_b().z, t.get_c().z});
+  const PointTy max_z = std::max({t.get_a().z, t.get_b().z, t.get_c().z});
+
+  return { Point<PointTy>{min_x, min_y, min_z},
+           Point<PointTy>{max_x, max_y, max_z} };
 }
 
 template <typename PointTy = double>
 std::pair<Point<PointTy>, Point<PointTy>>
 get_segment_space(const Point<PointTy> a, const Point<PointTy> b) 
 {
-  PointTy min_x = std::min(a.x, b.x);
-  PointTy max_x = std::max(a.x, b.x);
-  PointTy min_y = std::min(a.y, b.y);
-  PointTy max_y = std::max(a.y, b.y);
-  PointTy min_z = std::min(a.z, b.z);
-  PointTy max_z = std::max(a.z, b.z);
+  auto [min_x, max_x] = std::minmax(a.x, b.x);
+  auto [min_y, max_y] = std::minmax(a.y, b.y);
+  auto [min_z, max_z] = std::minmax(a.z, b.z);
 
   Point<PointTy> min_vector{min_x, min_y, min_z};
   Point<PointTy> max_vector{max_x, max_y, max_z};
