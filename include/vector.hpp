@@ -29,7 +29,7 @@ struct Vector
   void normalize() 
   {
     PointTy len = length();
-    if (!double_cmp(len, 0.0)) 
+    if (!double_cmp(len, PointTy{0})) 
     {
       x = x / len;
       y = y / len;
@@ -96,5 +96,18 @@ Vector<PointTy> vector_from_point(const Point<PointTy> &point)
 {
   return { point.x, point.y, point.z };
 }
+
+template <typename PointTy = double>
+Point<PointTy> operator+(const Point<PointTy> &point, const Vector<PointTy> &vector) noexcept
+{
+  return { point.x + vector.x, point.y + vector.y, point.z + vector.z };
+}
+
+template <typename PointTy = double>
+Point<PointTy> operator-(const Point<PointTy> &point, const Vector<PointTy> &vector) noexcept
+{
+  return { point.x - vector.x, point.y - vector.y, point.z - vector.z };
+}
+
 
 } // namespace triangle

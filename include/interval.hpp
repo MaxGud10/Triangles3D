@@ -100,12 +100,7 @@ std::vector<Point<PointTy>> clip_triangle_with_plane(const Triangle<PointTy>& tr
         if ((d1 > eps && d2 < -eps) || (d1 < -eps && d2 > eps))
         {
             PointTy t = d1 / (d1 - d2); // t (0,1)
-            Point<PointTy> inter
-            {
-                P1.x + (P2.x - P1.x) * t,
-                P1.y + (P2.y - P1.y) * t,
-                P1.z + (P2.z - P1.z) * t
-            };
+            Point<PointTy> inter = P1 + (P2 - P1) * t;
 
             push_unique_point(out, inter);
         }

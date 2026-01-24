@@ -43,11 +43,16 @@ struct Point
       return { x + other.x, y + other.y, z + other.z };
     }
 
-
     Point<PointTy> operator-(const Point<PointTy> &other) const 
     {
       return { x - other.x, y - other.y, z - other.z };
     }
+
+    Point<PointTy> operator*(PointTy s) const // умножение на скаляр
+    {
+        return { x * s, y * s, z * s };
+    }
+
 };
 
 } // namespace triangle

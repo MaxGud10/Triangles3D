@@ -26,11 +26,7 @@ template <typename PointTy>
 Triangle<PointTy> make_triangle_from_line(const Line<PointTy>& l)
 {
     Point<PointTy> p1 = l.point;
-    Point<PointTy> p2{
-        l.point.x + l.vector.x,
-        l.point.y + l.vector.y,
-        l.point.z + l.vector.z
-    };
+    Point<PointTy> p2 = l.point + l.vector;
 
     // треугольник с двумя совпадающими вершинами
     return Triangle<PointTy>(p1, p2, p2);
