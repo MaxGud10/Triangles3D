@@ -1,11 +1,12 @@
 #include "octotree.hpp"
 #include "triangle_with_id.hpp"
+#include "intersection.hpp"
 
 int main() 
 {
   using PointTy = double;
 
-  std::vector<triangle::TriangleWithId<PointTy>> input;
+  std::vector<triangle::ShapeWithId<PointTy>> input;
   size_t triag_num = 0;
   std::cin >> triag_num;
   input.reserve(triag_num);
@@ -25,13 +26,21 @@ int main()
       return 1;
     }
 
-    triangle::TriangleWithId<PointTy> rec;
+    triangle::ShapeWithId<PointTy> rec;
 
-    rec.tri = triangle::Triangle<PointTy>{
-        {x1, y1, z1},
-        {x2, y2, z2},
-        {x3, y3, z3}
-    };
+    triangle::Point<PointTy> a{x1, y1, z1};
+    triangle::Point<PointTy> b{x2, y2, z2};
+    triangle::Point<PointTy> c{x3, y3, z3};
+
+    rec.shape = triangle::make_shape_from_points<PointTy>(a, b, c);
+
+    rec.min_bound = {std::min({a.x, b.x, c.x}),
+                  std::min({a.y, b.y, c.y}),
+                  std::min({a.z, b.z, c.z})};
+
+    rec.max_bound = {std::max({a.x, b.x, c.x}),
+                  std::max({a.y, b.y, c.y}),
+                  std::max({a.z, b.z, c.z})};
 
     rec.id = i;
 

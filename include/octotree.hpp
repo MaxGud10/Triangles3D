@@ -5,7 +5,6 @@
 #include <vector>
 #include <list>
 
-#include "triangles.hpp"
 #include "triangle_with_id.hpp"
 #include "intersection.hpp"
 
@@ -16,7 +15,7 @@ namespace triangle
 template <typename PointTy = double> 
 class BoundingBox 
 {
-  std::deque<TriangleWithId<PointTy>> incell;
+  std::deque<ShapeWithId<PointTy>> incell;
 
   Vector<PointTy> min;
   Vector<PointTy> max;
@@ -53,8 +52,8 @@ public:
   PointTy average_y() const { return (min.y + max.y) / static_cast<PointTy>(2); }
   PointTy average_z() const { return (min.z + max.z) / static_cast<PointTy>(2); }
 
-        std::deque<TriangleWithId<PointTy>> &get_incell()       { return incell; }
-  const std::deque<TriangleWithId<PointTy>> &get_incell() const { return incell; }
+        std::deque<ShapeWithId<PointTy>> &get_incell()       { return incell; }
+  const std::deque<ShapeWithId<PointTy>> &get_incell() const { return incell; }
 
   void group_intersections(std::map<size_t, size_t> &result) 
   {
@@ -65,7 +64,7 @@ public:
 
       for (auto two = it; two != incell.end(); ++two) 
       {
-        if (check_intersection(one->tri, two->tri)) 
+        if (check_intersection(one->shape, two->shape))
         {
             result[one->id] = one->id;
             result[two->id] = two->id;
@@ -78,15 +77,15 @@ public:
 template <typename PointTy = double> 
 class Octotree 
 {
-  std::vector<TriangleWithId<PointTy>> input;
-  std::deque <BoundingBox   <PointTy>> cells;
+  std::vector<ShapeWithId<PointTy>> input;
+  std::deque <BoundingBox<PointTy>> cells;
 
   size_t depth     = 0;
   size_t cells_num = 0;
   size_t axis      = 0;
 
 public:
-  Octotree(const std::vector<TriangleWithId<PointTy>> &triangles) : input(triangles)
+  Octotree(const std::vector<ShapeWithId<PointTy>> &shapes) : input(shapes)
   {
       cells.emplace_back (input.begin(), input.end());
       depth = count_depth(input.size());
@@ -113,8 +112,8 @@ public:
 
   void divide_cell() 
   {
-    std::vector<TriangleWithId<PointTy>> plus;
-    std::vector<TriangleWithId<PointTy>> minus;
+    std::vector<ShapeWithId<PointTy>> plus;
+    std::vector<ShapeWithId<PointTy>> minus;
 
     size_t copy_num_of_cells = cells_num;
 
@@ -122,31 +121,33 @@ public:
     {
       auto front_groups = cells.front();
 
-      size_t  nod     = axis % 3;
-      PointTy average = calculate_average(front_groups, nod);
+      size_t  axis     = axis % 3;
+      PointTy average = calculate_average(front_groups, axis);
 
       plus .reserve(front_groups.get_incell().size());
       minus.reserve(front_groups.get_incell().size());
 
-      for (const auto &it : front_groups.get_incell()) 
+      for (const auto& it : front_groups.get_incell()) 
       {
-        PointTy coordinates[3][3] = 
-        {
-            it.get_a().x, it.get_b().x, it.get_c().x,
-            it.get_a().y, it.get_b().y, it.get_c().y,
-            it.get_a().z, it.get_b().z, it.get_c().z};
+          PointTy min_on_axis = PointTy{0};
+          PointTy max_on_axis = PointTy{0};
 
-        if (coordinates[nod][0] >= average || coordinates[nod][1] >= average ||
-            coordinates[nod][2] >= average)
-        {
-          plus.push_back(it);
-        }
+          switch (axis)
+          {
+            case 0: min_on_axis = it.min_x(); max_on_axis = it.max_x(); break;
 
-        if (coordinates[nod][0] <= average || coordinates[nod][1] <= average ||
-            coordinates[nod][2] <= average) 
-        {
-          minus.push_back(it);
-        }
+            case 1: min_on_axis = it.min_y(); max_on_axis = it.max_y(); break;
+
+            case 2: min_on_axis = it.min_z(); max_on_axis = it.max_z(); break; 
+            
+            default: throw std::invalid_argument("invalid axis");
+          }
+
+          if (max_on_axis >= average) 
+            plus.push_back(it);
+
+          if (min_on_axis <= average) 
+            minus.push_back(it);
       }
 
       if (plus.size() + minus.size() < front_groups.get_incell().size() * 2) 
@@ -177,9 +178,9 @@ public:
     }
   }
 
-  PointTy calculate_average(const BoundingBox<PointTy> &box, int nod) const 
+  PointTy calculate_average(const BoundingBox<PointTy> &box, int axis) const 
   {
-    switch (nod) 
+    switch (axis) 
     {
       case 0:
         return box.average_x();

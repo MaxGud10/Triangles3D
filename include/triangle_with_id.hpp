@@ -1,28 +1,29 @@
 #pragma once
 
-#include "triangles.hpp"
+#include <cstddef>
 
-namespace triangle {
+#include "intersection.hpp" 
+#include "point.hpp"
+
+namespace triangle
+{
 
 template <typename PointTy = double>
-struct TriangleWithId
+struct ShapeWithId
 {
-    Triangle<PointTy> tri;
+    Shape<PointTy> shape;
     size_t id = 0;
 
-    const Point<PointTy> &get_a() const { return tri.get_a(); }
-    const Point<PointTy> &get_b() const { return tri.get_b(); }
-    const Point<PointTy> &get_c() const { return tri.get_c(); }
+    Point<PointTy> min_bound{};
+    Point<PointTy> max_bound{};
 
-    PointTy min_x() const { return tri.min_x(); }
-    PointTy min_y() const { return tri.min_y(); }
-    PointTy min_z() const { return tri.min_z(); }
+    PointTy min_x() const { return min_bound.x; }
+    PointTy min_y() const { return min_bound.y; }
+    PointTy min_z() const { return min_bound.z; }
 
-    PointTy max_x() const { return tri.max_x(); }
-    PointTy max_y() const { return tri.max_y(); }
-    PointTy max_z() const { return tri.max_z(); }
-
-    auto get_type() const { return tri.get_type(); }
+    PointTy max_x() const { return max_bound.x; }
+    PointTy max_y() const { return max_bound.y; }
+    PointTy max_z() const { return max_bound.z; }
 };
 
 } // namespace triangle

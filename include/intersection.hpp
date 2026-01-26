@@ -23,122 +23,128 @@ Triangle<PointTy> make_triangle_from_point(const Point<PointTy>& p)
 template <typename PointTy>
 Triangle<PointTy> make_triangle_from_line(const Line<PointTy>& l)
 {
-    Point<PointTy> p1 = l.point;
-    Point<PointTy> p2 = l.point + l.vector;
+    const Point<PointTy> p1 = l.point;
+    const Point<PointTy> p2 = l.point + l.vector; 
 
     // треугольник с двумя совпадающими вершинами
     return Triangle<PointTy>(p1, p2, p2);
 }
 
 template <typename PointTy>
-Shape<PointTy> to_shape(const Triangle<PointTy>& t)
+Shape<PointTy> make_shape_from_points(const Point<PointTy> &a,
+                                      const Point<PointTy> &b,
+                                      const Point<PointTy> &c)
 {
-    using TYPE = typename Triangle<PointTy>::TriangleType;
+    // все три точки совпали 
+    if (a == b && b == c)
+        return a;
 
-    switch (t.get_type())
+    // if коллинеарны or есть совпадающие вершины 
+    if (a == b || b == c || a == c || three_points_on_one_line(a, b, c))
     {
-        case TYPE::TRIANGLE:
-            return t;
-        case TYPE::LINE:
-            return get_line_from_triangle(t);  // Line
-        case TYPE::POINT:
-            return t.get_a();                  // Point
-        default: // пересечение нет
-            // возвращаем просто точку (но потом check_intersection вернёт false)
-            return Point<PointTy>{};
+        // берём две разные точки
+        Point<PointTy> p = a;
+        Point<PointTy> q = b;
+
+        if (p == q) 
+            q = c;
+
+        Line<PointTy> l;
+        l.point  = p;
+        l.vector = vector_from_point(q - p); 
+
+        return l;
     }
+
+    // иначе Triangle
+    return Triangle<PointTy>(a, b, c);
 }
 
-// TRIANGLE - TRIANGLE
+// Triangle - Triangle
 template <typename PointTy>
-bool intersect(const Triangle<PointTy>& a, const Triangle<PointTy>& b)
+bool intersect(const Triangle<PointTy> &a, const Triangle<PointTy> &b)
 {
+
     Triangle<PointTy> t1 = a;
     Triangle<PointTy> t2 = b;
+
     return intersect_triangle_with_triangle_in_3D(t1, t2);
 }
 
-// TRIANGLE — LINE
+// Triangle - Line
 template <typename PointTy>
 bool intersect(const Triangle<PointTy>& tri, const Line<PointTy>& l)
 {
     Triangle<PointTy> line_tri = make_triangle_from_line(l);
     Triangle<PointTy> tcopy    = tri;
+
     return intersect_triangle_with_line_in_3D(tcopy, line_tri);
 }
 
-// LINE — TRIANGLE
+// Line - Triangle
 template <typename PointTy>
-bool intersect(const Line<PointTy>& l, const Triangle<PointTy>& tri)
+bool intersect(const Line<PointTy> &l, const Triangle<PointTy> &tri)
 {
     return intersect<PointTy>(tri, l);
 }
 
-// TRIANGLE — POINT
+// Triangle - Point
 template <typename PointTy>
-bool intersect(const Triangle<PointTy>& tri, const Point<PointTy>& p)
+bool intersect(const Triangle<PointTy> &tri, const Point<PointTy> &p)
 {
     Triangle<PointTy> pt_tri = make_triangle_from_point(p);
     Triangle<PointTy> tcopy  = tri;
+
     return intersect_triangle_with_point(tcopy, pt_tri);
 }
 
-// POINT — TRIANGLE
+// Point - Triangle
 template <typename PointTy>
-bool intersect(const Point<PointTy>& p, const Triangle<PointTy>& tri)
+bool intersect(const Point<PointTy> &p, const Triangle<PointTy> &tri)
 {
     return intersect<PointTy>(tri, p);
 }
 
-// LINE — LINE
+// Line - Line
 template <typename PointTy>
-bool intersect(const Line<PointTy>& a, const Line<PointTy>& b)
+bool intersect(const Line<PointTy> &a, const Line<PointTy> &b)
 {
     Triangle<PointTy> ta = make_triangle_from_line(a);
     Triangle<PointTy> tb = make_triangle_from_line(b);
+
     return intersect_line_with_line(ta, tb);
 }
 
-// LINE — POINT
+// Line - Point
 template <typename PointTy>
-bool intersect(const Line<PointTy>& l, const Point<PointTy>& p)
+bool intersect(const Line<PointTy> &l, const Point<PointTy> &p)
 {
-    Triangle<PointTy> line_tri = make_triangle_from_line(l);
-    Triangle<PointTy> pt_tri   = make_triangle_from_point(p);
-    return intersect_line_with_point(line_tri, pt_tri);
+    const auto cr = cross(vector_from_point(p - l.point), l.vector);
+
+    return double_cmp(cr.x, PointTy{0}) &&
+           double_cmp(cr.y, PointTy{0}) &&
+           double_cmp(cr.z, PointTy{0});
 }
 
-// POINT — LINE
+// Point - Line
 template <typename PointTy>
-bool intersect(const Point<PointTy>& p, const Line<PointTy>& l)
+bool intersect(const Point<PointTy> &p, const Line<PointTy> &l)
 {
     return intersect<PointTy>(l, p);
 }
 
-// POINT — POINT
+// Point - Point
 template <typename PointTy>
-bool intersect(const Point<PointTy>& a, const Point<PointTy>& b)
+bool intersect(const Point<PointTy> &a, const Point<PointTy> &b)
 {
     return a == b;
 }
 
 template <typename PointTy = double>
-bool check_intersection(const Triangle<PointTy>& t1,
-                        const Triangle<PointTy>& t2)
+bool check_intersection(const Shape<PointTy> &s1, const Shape<PointTy> &s2)
 {
-    using TYPE = typename Triangle<PointTy>::TriangleType;
-
-    if (t1.get_type() == TYPE::NONE || t2.get_type() == TYPE::NONE)
-        return false;
-
-    Shape<PointTy> s1 = to_shape(t1);
-    Shape<PointTy> s2 = to_shape(t2);
-
     return std::visit(
-        [](auto&& a, auto&& b) -> bool
-        {
-            return intersect(a, b); 
-        },
+        [](auto&& a, auto&& b) -> bool { return intersect(a, b); },
         s1, s2
     );
 }
