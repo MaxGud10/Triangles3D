@@ -108,32 +108,27 @@ Point<PointTy> intersect_line_with_line(const Line<PointTy> &line1, const Line<P
 
 // находим саму линию (точку и напрявляющий вектор) из треугольника который выродился в линию
 template <typename PointTy = double>
-Line<PointTy> get_line_from_triangle(const Triangle<PointTy> &t) 
+Line<PointTy> get_line_from_triangle(const Triangle<PointTy> &t)
 {
-  Line<PointTy> line{};
+    const auto& A = t.get_a();
+    const auto& B = t.get_b();
+    const auto& C = t.get_c();
 
-  if (t.get_type() != Triangle<PointTy>::LINE)
+    // if все три совпали => линии нет
+    if (A == B && B == C)
+        return {};
+
+    Point<PointTy> p = A;
+    Point<PointTy> q = B;
+
+    if (p == q) 
+      q = C; 
+
+    Line<PointTy> line{};
+    line.point  = p;
+    line.vector = vector_from_point(q - p);
+
     return line;
-
-  if (t.get_a() == t.get_b()) 
-  {
-    line.vector = vector_from_point(t.get_c() - t.get_a()); // напрвл вект d = c - a, P0 = a
-    line.point  = t.get_a();
-  } 
-
-  else if (t.get_a() == t.get_c()) 
-  {
-    line.vector = vector_from_point(t.get_b() - t.get_a()); // d = b − a, P0 = a
-    line.point  = t.get_a();
-  } 
-
-  else // b == c
-  {
-    line.vector = vector_from_point(t.get_c() - t.get_a());
-    line.point  = t.get_a();
-  }
-
-  return line;
 }
 
 // лежит ли точка на прямой

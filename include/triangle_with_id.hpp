@@ -14,7 +14,7 @@ struct ShapeWithId
     Shape<PointTy> shape;
     size_t id = 0;
 
-    Point<PointTy> min_bound{};
+    Point<PointTy> min_bound{}; 
     Point<PointTy> max_bound{};
 
     PointTy min_x() const { return min_bound.x; }

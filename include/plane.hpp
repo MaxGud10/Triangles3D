@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cmath>
-#include <math.h>
 #include <limits>
 
 #include "config.hpp"
@@ -117,7 +116,7 @@ public:
 };
 
 template <typename PointTy = double>
-PointTy planes_are_parallel(const Plane<PointTy> &plane1, const Plane<PointTy> &plane2) 
+bool planes_are_parallel(const Plane<PointTy> &plane1, const Plane<PointTy> &plane2) 
 {
   if ((double_cmp( plane1.get_A(), plane2.get_A()) &&
        double_cmp( plane1.get_B(), plane2.get_B()) &&
@@ -136,7 +135,7 @@ PointTy planes_are_parallel(const Plane<PointTy> &plane1, const Plane<PointTy> &
 template <typename PointTy = double>
 Vector<PointTy> get_planes_intersection_vector(const Plane<PointTy> &plane1, const Plane<PointTy> &plane2) 
 {
-  Vector vec = cross(plane1.get_normal(), plane2.get_normal());
+  Vector<PointTy> vec = cross(plane1.get_normal(), plane2.get_normal());
 
   return vec;
 }
