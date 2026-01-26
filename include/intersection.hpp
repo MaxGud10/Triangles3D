@@ -10,11 +10,9 @@ namespace triangle
 {
 
 template <typename PointTy = double>
-using Shape = std::variant<
-    Triangle<PointTy>,
-    Line    <PointTy>,
-    Point   <PointTy>
->;
+using Shape = std::variant<Triangle<PointTy>,
+                           Line    <PointTy>,
+                           Point   <PointTy>>;
 
 template <typename PointTy>
 Triangle<PointTy> make_triangle_from_point(const Point<PointTy>& p)

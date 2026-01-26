@@ -78,7 +78,7 @@ void push_unique_point(std::vector<Point<PointTy>>& points, const Point<PointTy>
 template <typename PointTy>
 std::vector<Point<PointTy>> clip_triangle_with_plane(const Triangle<PointTy>& tri, const Plane<PointTy>& plane)
 {
-    const Point<PointTy> V[3] = { tri   .get_a(),          tri   .get_b(),          tri    .get_c() };
+    const Point<PointTy> V[3] = { tri   .get_a(),          tri   .get_b(),          tri   .get_c() };
                 PointTy  d[3] = { plane .substitute(V[0]), plane .substitute(V[1]), plane .substitute(V[2]) };
     const       PointTy  eps  = epsilon;
 

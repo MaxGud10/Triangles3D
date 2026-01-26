@@ -90,19 +90,9 @@ Point<PointTy> intersect_line_with_line(const Line<PointTy> &line1, const Line<P
   PointTy t = (A * E - B * D) / denom; 
 
   // точки ближайшего подхода на каждой прямой
-  Point<PointTy> p1
-  {
-      line1.point.x + u.x * s,
-      line1.point.y + u.y * s,
-      line1.point.z + u.z * s,
-  };
+  Point<PointTy> p1 = line1.point + u * s;
 
-  Point<PointTy> p2
-  {
-      line2.point.x + v.x * t,
-      line2.point.y + v.y * t,
-      line2.point.z + v.z * t,
-  };
+  Point<PointTy> p2 = line2.point + v * t;
 
   // расстояние между ближайшими точками на прямых
   Vector<PointTy> diff  = vector_from_point(p1 - p2);
