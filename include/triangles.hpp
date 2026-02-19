@@ -33,6 +33,88 @@ private:
   PointTy min_coord(int axis) const { return std::min({coord(a, axis), coord(b, axis), coord(c, axis)}); }
   PointTy max_coord(int axis) const { return std::max({coord(a, axis), coord(b, axis), coord(c, axis)}); }
 
+
+  bool point_is_coplanar(const Point<PointTy> &point) const
+  {
+      // checking the coplanarity
+      Plane<PointTy> pl(get_a(), get_b(), get_c());
+      const auto sd = pl.substitute(point);
+
+      return double_cmp(sd, PointTy{0});
+  }
+
+  bool same_point(const Point<PointTy> &U, const Point<PointTy> &V) const
+  {
+      return double_cmp(U.x, V.x) &&
+             double_cmp(U.y, V.y) &&
+             double_cmp(U.z, V.z);
+  }
+
+  bool point_on_segment(const Point<PointTy> &X, const Point<PointTy> &Y, const Point<PointTy> &point) const
+  {
+      const Vector<PointTy> XY = vector_from_point(Y     - X);
+      const Vector<PointTy> XP = vector_from_point(point - X);
+
+      const auto cr = cross(XY, XP);
+
+      if (!double_cmp(cr.x, PointTy{0}) ||
+          !double_cmp(cr.y, PointTy{0}) ||
+          !double_cmp(cr.z, PointTy{0}))
+          return false;
+
+      const PointTy minx = std::min(X.x, Y.x) - epsilon;
+      const PointTy maxx = std::max(X.x, Y.x) + epsilon;
+      const PointTy miny = std::min(X.y, Y.y) - epsilon;
+      const PointTy maxy = std::max(X.y, Y.y) + epsilon;
+      const PointTy minz = std::min(X.z, Y.z) - epsilon;
+      const PointTy maxz = std::max(X.z, Y.z) + epsilon;
+
+      return (point.x >= minx && point.x <= maxx &&
+              point.y >= miny && point.y <= maxy &&
+              point.z >= minz && point.z <= maxz);
+  }
+
+  bool point_in_degenerate_triangle(const Point<PointTy> &point) const
+  {
+      const auto &A = get_a();
+      const auto &B = get_b();
+      const auto &C = get_c();
+
+      return point_on_segment(A, B, point) || point_on_segment(A, C, point) || point_on_segment(B, C, point) ||
+             same_point(point, A)          || same_point(point, B)          || same_point(point, C);
+  }
+
+  bool point_in_non_degenerate_triangle(const Point<PointTy> &point) const
+  {
+      const Vector<PointTy> v0 = vector_from_point(get_c() - get_a()); // C - A
+      const Vector<PointTy> v1 = vector_from_point(get_b() - get_a()); // B - A
+      const Vector<PointTy> v2 = vector_from_point(point   - get_a()); // point - A
+
+      const PointTy dot00 = dot(v0, v0);
+      const PointTy dot01 = dot(v0, v1);
+      const PointTy dot02 = dot(v0, v2);
+      const PointTy dot11 = dot(v1, v1);
+      const PointTy dot12 = dot(v1, v2);
+
+      const PointTy denom = dot00 * dot11 - dot01 * dot01;
+      if (double_cmp(denom, PointTy{0}))
+          return false;
+
+      const PointTy inv = PointTy{1} / denom;
+      const PointTy u   = (dot11 * dot02 - dot01 * dot12) * inv;
+      const PointTy v   = (dot00 * dot12 - dot01 * dot02) * inv;
+
+      const PointTy eps = PointTy(epsilon) * PointTy{10};
+
+      if (u >= -eps && v >= -eps && (u + v) <= (PointTy{1} + eps))
+          return true;
+
+      return (double_cmp(u,     PointTy{0}) || u > 0) &&
+             (double_cmp(v,     PointTy{0}) || v > 0) &&
+             (double_cmp(u + v, PointTy{1}) || (u + v) < PointTy{1} + eps);
+  }
+
+
 public:
   Triangle() = default;
 
@@ -66,92 +148,34 @@ public:
 
   std::pair<Point<PointTy>, Point<PointTy>> get_triangle_space() const
   {
-    return { Point<PointTy>{min_x(), min_y(), min_z()},
-             Point<PointTy>{max_x(), max_y(), max_z()} };
+    return {Point<PointTy>{min_x(), min_y(), min_z()},
+            Point<PointTy>{max_x(), max_y(), max_z()}};
   }
 
   // is the point inside the triangle
   bool is_point_in_triangle(const Point<PointTy> &point) const
   {
-      // checking the coplanarity
-      Plane<PointTy> pl(get_a(), get_b(), get_c());
-      const auto sd = pl.substitute(point);
-
-      if (!double_cmp(sd, PointTy{0})) return false;
+      if (!point_is_coplanar(point))
+          return false;
 
       // barycentric coordinates
-      const Vector<PointTy> v0 = vector_from_point(get_c() - get_a()); // C - A
-      const Vector<PointTy> v1 = vector_from_point(get_b() - get_a()); // B - A
-      const Vector<PointTy> v2 = vector_from_point(point   - get_a()); // point - A
-
+      const Vector<PointTy> v0 = vector_from_point(get_c() - get_a());
+      const Vector<PointTy> v1 = vector_from_point(get_b() - get_a());
 
       const PointTy dot00 = dot(v0, v0);
       const PointTy dot01 = dot(v0, v1);
-      const PointTy dot02 = dot(v0, v2);
       const PointTy dot11 = dot(v1, v1);
-      const PointTy dot12 = dot(v1, v2);
+
+      const PointTy denom = dot00 * dot11 - dot01 * dot01;
 
       // for a degenerate triangle: check if it hits one of the edges / vertices
-      const PointTy denom = dot00 * dot11 - dot01 * dot01;
       if (double_cmp(denom, PointTy{0}))
-      {
-          // degenerate triangle: does point lie on an edge / vertex
-          const auto &A = get_a();
-          const auto &B = get_b();
-          const auto &C = get_c();
+          return point_in_degenerate_triangle(point);
 
-          auto same_point = [&](const Point<PointTy> &U, const Point<PointTy> &V)
-          {
-              return double_cmp(U.x, V.x) &&
-                     double_cmp(U.y, V.y) &&
-                     double_cmp(U.z, V.z);
-          };
-
-          // does point lie on the segment [x, y]
-          auto on_segment = [&](const Point<PointTy> &X, const Point<PointTy> &Y) -> bool
-          {
-              const Vector<PointTy> XY = vector_from_point(Y     - X);
-              const Vector<PointTy> XP = vector_from_point(point - X);
-
-              const auto cr = cross(XY, XP);
-
-              // collinearity
-              if (!double_cmp(cr.x, PointTy{0}) ||
-                  !double_cmp(cr.y, PointTy{0}) ||
-                  !double_cmp(cr.z, PointTy{0}))
-                  return false;
-
-              // point within the projected AABB with a tolerance
-              const PointTy minx = std::min(X.x, Y.x) - epsilon;
-              const PointTy maxx = std::max(X.x, Y.x) + epsilon;
-              const PointTy miny = std::min(X.y, Y.y) - epsilon;
-              const PointTy maxy = std::max(X.y, Y.y) + epsilon;
-              const PointTy minz = std::min(X.z, Y.z) - epsilon;
-              const PointTy maxz = std::max(X.z, Y.z) + epsilon;
-
-              return (point.x >= minx && point.x <= maxx &&
-                      point.y >= miny && point.y <= maxy &&
-                      point.z >= minz && point.z <= maxz);
-          };
-
-          return on_segment (A,     B) || on_segment (A,     C) || on_segment (B,     C) ||
-                 same_point (point, A) || same_point (point, B) || same_point (point, C);
-      }
-
-      // non-degenerate case: u,v within the triangle
-      const PointTy inv = PointTy{1} / denom;
-      const PointTy u   = (dot11 * dot02 - dot01 * dot12) * inv;
-      const PointTy v   = (dot00 * dot12 - dot01 * dot02) * inv;
-
-      // we slightly expand the boundaries by eps to устойчиво calculate a point on the edge
-      const PointTy eps = PointTy(epsilon) * PointTy{10};
-      if (u >= -eps && v >= -eps && (u + v) <= (PointTy{1} + eps))
-        return true;
-
-      return (double_cmp(u,     PointTy{0}) || u > 0) &&
-             (double_cmp(v,     PointTy{0}) || v > 0) &&
-             (double_cmp(u + v, PointTy{1}) || (u + v) < PointTy{1} + eps);
+      return point_in_non_degenerate_triangle(point);
   }
+
+
 };
 
 template <typename PointTy = double>
@@ -160,10 +184,10 @@ bool intersect_triangle_with_triangle_in_3D(Triangle<PointTy> &t1, Triangle<Poin
   Plane<PointTy> plane1(t1.get_a(), t1.get_b(), t1.get_c());
   Plane<PointTy> plane2(t2.get_a(), t2.get_b(), t2.get_c());
 
-  // проверим плоскости на совпадение
+  // let's check the planes for a match
   if (plane1.planes_are_parallel(plane2))
   {
-    // коллинерны ли они
+    // are they collinear
     if (double_cmp( plane1.get_D(), plane2.get_D()) ||
         double_cmp(-plane1.get_D(), plane2.get_D()))
     {
@@ -172,7 +196,7 @@ bool intersect_triangle_with_triangle_in_3D(Triangle<PointTy> &t1, Triangle<Poin
     return false;
   }
 
-  // расстояния вершин до плоскостей
+  // distances of vertices to planes
   auto same_strict_sign = [](PointTy x, PointTy y, PointTy z)
   {
     auto pos = [](PointTy v) { return v > PointTy{0} && !double_cmp(v, PointTy{0}); };
@@ -184,16 +208,16 @@ bool intersect_triangle_with_triangle_in_3D(Triangle<PointTy> &t1, Triangle<Poin
     return all_pos || all_neg;
   };
 
-  // если все знаковые расстояния от вершин Т2 до треугольника Т1 одного знака,
-  // значит треугольники не пересекаются
+  // if all the signed distances from the vertices of T2 to the triangle T1 are of the same sign,
+  // then the triangles do not intersect
   PointTy signed_dist11 = plane1.substitute(t2.get_a());
   PointTy signed_dist21 = plane1.substitute(t2.get_b());
   PointTy signed_dist31 = plane1.substitute(t2.get_c());
   if (same_strict_sign(signed_dist11, signed_dist21, signed_dist31))
     return false;
 
-  // если все знаковые расстояния от вершин Т1 до треугольника Т2 одного знака,
-  // значит треугольники не пересекаются
+  // if all the signed distances from the vertices of T1 to triangle T2 are of the same sign,
+  // then the triangles do not intersect
   PointTy signed_dist12 = plane2.substitute(t1.get_a());
   PointTy signed_dist22 = plane2.substitute(t1.get_b());
   PointTy signed_dist32 = plane2.substitute(t1.get_c());
@@ -201,19 +225,19 @@ bool intersect_triangle_with_triangle_in_3D(Triangle<PointTy> &t1, Triangle<Poin
     return false;
 
 
-  // тогда проверим на пересечение. Найдем прямую пересечения двух плоскостей
+  // then we will check for intersection. we will find the intersection line of two planes
   Line<PointTy> inter_line{plane1.get_planes_intersection_vector(plane2),
                            plane1.get_planes_intersection_point (plane2)};
 
-  // найдем интервалы пересечения треугольников с прямой пересечения плоскостей
-  auto interval1 = get_interval_by_plane_clip(t1, plane2); // плоскость T2 режет треугольник T1
-  auto interval2 = get_interval_by_plane_clip(t2, plane1); // плоскость T1 режет треугольник T2
+  // find the intersection intervals of the triangles with the intersection line of the planes
+  auto interval1 = get_interval_by_plane_clip(t1, plane2); // plane T2 cuts triangle T1
+  auto interval2 = get_interval_by_plane_clip(t2, plane1); // plane T1 cuts triangle T2
   if (!interval1.valid() || !interval2.valid())
   {
     return false;
   }
 
-  // проверим, пересекаются ли интервалы.
+  // let's check if the intervals intersect.
   return interval1.intersect_intervals(interval2);
 }
 
@@ -233,103 +257,117 @@ Interval<PointTy> get_interval_of_triangle_and_line(const Line<PointTy> &inter_l
   return interval;
 }
 
-template <typename PointTy = double>
-bool intersect_triangle_with_triangle_in_2D(const Triangle<PointTy> &t1, const Triangle<PointTy> &t2) // TODO: поделить на фУНКЦИИ
+template <typename PointTy>
+int get_excluded_axis_index_for_2D(const Plane<PointTy> &plane)
 {
-  Plane<PointTy> plane(t1.get_a(), t1.get_b(), t1.get_c()); // постоили пл-ть оп t1
-
-  // выберем какую координату исключим, чтобы рабоать в двумерных координатах
   int excluded_axis_index = 2;
 
   PointTy absA = std::abs(plane.get_A()); // |A|
   PointTy absB = std::abs(plane.get_B()); // |B|
   PointTy absC = std::abs(plane.get_C()); // |C|
 
-  // наибольшая по модулю компонента нормали указывает ось, которую выгоднее исключить
+  // the largest absolute value of the normal component indicates the axis that is most advantageous to exclude
   if (absA >= absB && absA >= absC)
-    excluded_axis_index = 0; // работаем с парами (y,z)
+    excluded_axis_index = 0; // working with pairs (y,z)
 
   else if (absB >= absA && absB >= absC)
-    excluded_axis_index = 1; // работаем с парами (x,z)
+    excluded_axis_index = 1; // working with pairs (x,z)
 
   else
-    excluded_axis_index = 2; // // работаем с парами (x,y)
+    excluded_axis_index = 2; // working with pairs (x,y)
 
+  return excluded_axis_index;
+}
 
-  auto project_point_to_2d = [excluded_axis_index](const Point<PointTy>& p)->std::pair<PointTy, PointTy>
-  {
-    if (excluded_axis_index == 0)  return { p.y, p.z }; // (y, z)
-    if (excluded_axis_index == 1)  return { p.x, p.z }; // (x, z)
-    /* excluded_axis_index == 2 */ return { p.x, p.y }; // (x, y)
-  };
+template <typename PointTy>
+std::pair<PointTy, PointTy> project_point_to_2d(const Point<PointTy> &p, int excluded_axis_index)
+{
+  if (excluded_axis_index == 0)  return { p.y, p.z }; // (y, z)
+  if (excluded_axis_index == 1)  return { p.x, p.z }; // (x, z)
+  /* excluded_axis_index == 2 */ return { p.x, p.y }; // (x, y)
+}
 
-  // проецируем вершины обоих треугольников в 2D
-  std::pair<PointTy,PointTy> a1 = project_point_to_2d(t1.get_a());
-  std::pair<PointTy,PointTy> b1 = project_point_to_2d(t1.get_b());
-  std::pair<PointTy,PointTy> c1 = project_point_to_2d(t1.get_c());
+// orientation of the square in 2D
+template <typename PointTy>
+PointTy oriented_area_2d(PointTy ax, PointTy ay,
+                         PointTy bx, PointTy by,
+                         PointTy cx, PointTy cy)
+{
+  // >0 — to the left of directed AB; <0 — to the right; =0 — collinear
+  return (bx-ax)*(cy-ay) - (by-ay)*(cx-ax);
+}
 
-  std::pair<PointTy,PointTy> a2 = project_point_to_2d(t2.get_a());
-  std::pair<PointTy,PointTy> b2 = project_point_to_2d(t2.get_b());
-  std::pair<PointTy,PointTy> c2 = project_point_to_2d(t2.get_c());
+// let's check if our point P lies on the segment AB
+template <typename PointTy>
+bool point_lies_on_segment_2d(PointTy ax, PointTy ay,
+                              PointTy bx, PointTy by,
+                              PointTy px, PointTy py)
+{
+  PointTy area = (bx-ax)*(py-ay) - (by-ay)*(px-ax);
+  if (!double_cmp(area, PointTy{0}))
+    return false; // not collinear
 
-  // ориентация площади в 2D
-  auto oriented_area_2d = [](PointTy ax, PointTy ay, PointTy bx, PointTy by, PointTy cx, PointTy cy)
-  {
-    // >0 — слева от направленного AB; <0 — справа; =0 — коллинеарны
-    return (bx-ax)*(cy-ay) - (by-ay)*(cx-ax);
-  };
+  PointTy minx = std::min(ax,bx), maxx = std::max(ax,bx);
+  PointTy miny = std::min(ay,by), maxy = std::max(ay,by);
 
-  // проверим лежит ли наша точка P на отрезке AB
-  auto point_lies_on_segment_2d = [](PointTy ax, PointTy ay,
-                                     PointTy bx, PointTy by,
-                                     PointTy px, PointTy py)
-  {
-    PointTy area = (bx-ax)*(py-ay) - (by-ay)*(px-ax);
-    if (!double_cmp(area, PointTy{0}))
-      return false; // не коллинеарны
+  return (px >= minx && px <= maxx && py >= miny && py <= maxy);
+}
 
-    PointTy minx = std::min(ax,bx), maxx = std::max(ax,bx);
-    PointTy miny = std::min(ay,by), maxy = std::max(ay,by);
+// intersection of two segments AB and CD in 2D
+template <typename PointTy>
+bool segments_intersect_2d(PointTy ax, PointTy ay,
+                           PointTy bx, PointTy by,
+                           PointTy cx, PointTy cy,
+                           PointTy dx, PointTy dy)
+{
+  PointTy o1 = oriented_area_2d<PointTy>(ax,ay,bx,by,cx,cy);
+  PointTy o2 = oriented_area_2d<PointTy>(ax,ay,bx,by,dx,dy);
+  PointTy o3 = oriented_area_2d<PointTy>(cx,cy,dx,dy,ax,ay);
+  PointTy o4 = oriented_area_2d<PointTy>(cx,cy,dx,dy,bx,by);
 
-    return (px >= minx && px <= maxx && py >= miny && py <= maxy);
-  };
+  const PointTy zero{0};
+  bool sep1 = (o1 > zero && o2 < zero) || (o1 < zero && o2 > zero);
+  bool sep2 = (o3 > zero && o4 < zero) || (o3 < zero && o4 > zero);
 
-  // перечение двух торезков AB и CD в 2D
-  auto segments_intersect_2d = [&](PointTy ax, PointTy ay,
-                                   PointTy bx, PointTy by,
-                                   PointTy cx, PointTy cy,
-                                   PointTy dx, PointTy dy)
-  {
-    PointTy o1 = oriented_area_2d(ax,ay,bx,by,cx,cy);
-    PointTy o2 = oriented_area_2d(ax,ay,bx,by,dx,dy);
-    PointTy o3 = oriented_area_2d(cx,cy,dx,dy,ax,ay);
-    PointTy o4 = oriented_area_2d(cx,cy,dx,dy,bx,by);
+  if (sep1 && sep2)
+    return true; // the segments intersect in a common position
 
-    const PointTy zero{0};
-    bool sep1 = (o1 > zero && o2 < zero) || (o1 < zero && o2 > zero);
-    bool sep2 = (o3 > zero && o4 < zero) || (o3 < zero && o4 > zero);
+  // special cases: touching/matching - by checking the endpoints' belonging to segments
+  if (point_lies_on_segment_2d<PointTy>(ax,ay,bx,by,cx,cy)) return true;
+  if (point_lies_on_segment_2d<PointTy>(ax,ay,bx,by,dx,dy)) return true;
+  if (point_lies_on_segment_2d<PointTy>(cx,cy,dx,dy,ax,ay)) return true;
+  if (point_lies_on_segment_2d<PointTy>(cx,cy,dx,dy,bx,by)) return true;
 
-    if (sep1 && sep2) return true; // отрезки пересекаются в общем положении
+  return false;
+}
 
-    // частные случаи: касание/совпадение — через проверку принадлежности концов отрезкам.
-    if (point_lies_on_segment_2d(ax,ay,bx,by,cx,cy)) return true;
-    if (point_lies_on_segment_2d(ax,ay,bx,by,dx,dy)) return true;
-    if (point_lies_on_segment_2d(cx,cy,dx,dy,ax,ay)) return true;
-    if (point_lies_on_segment_2d(cx,cy,dx,dy,bx,by)) return true;
+template <typename PointTy = double>
+bool intersect_triangle_with_triangle_in_2D(const Triangle<PointTy> &t1, const Triangle<PointTy> &t2)
+{
+  Plane<PointTy> plane(t1.get_a(), t1.get_b(), t1.get_c()); // we built the plane by t1
 
-    return false;
-  };
+  // let's choose which coordinate to exclude in order to work in two-dimensional coordinates
+  int excluded_axis_index = get_excluded_axis_index_for_2D<PointTy>(plane);
 
-  // проверия, что точка P=(px,py) внутри/на границе треугольника ABC в 2D
-  // то есть если все ориентированные площади относительно ребер ABC имеют один и тот же знак или 0
+  // we project the vertices of both triangles into 2D
+  std::pair<PointTy,PointTy> a1 = project_point_to_2d<PointTy>(t1.get_a(), excluded_axis_index);
+  std::pair<PointTy,PointTy> b1 = project_point_to_2d<PointTy>(t1.get_b(), excluded_axis_index);
+  std::pair<PointTy,PointTy> c1 = project_point_to_2d<PointTy>(t1.get_c(), excluded_axis_index);
+
+  std::pair<PointTy,PointTy> a2 = project_point_to_2d<PointTy>(t2.get_a(), excluded_axis_index);
+  std::pair<PointTy,PointTy> b2 = project_point_to_2d<PointTy>(t2.get_b(), excluded_axis_index);
+  std::pair<PointTy,PointTy> c2 = project_point_to_2d<PointTy>(t2.get_c(), excluded_axis_index);
+
+  // check that point P=(px,py) is inside/on the boundary of triangle ABC in 2D
+  // that is, if all the oriented areas relative to the edges of ABC have the same sign or 0
   auto point_inside_triangle_2d = [&](PointTy px, PointTy py,
                                       const std::pair<PointTy, PointTy>& A,
                                       const std::pair<PointTy, PointTy>& B,
                                       const std::pair<PointTy, PointTy>& C)
   {
-    PointTy o1 = oriented_area_2d(A.first,A.second,B.first,B.second,px,py);
-    PointTy o2 = oriented_area_2d(B.first,B.second,C.first,C.second,px,py);
-    PointTy o3 = oriented_area_2d(C.first,C.second,A.first,A.second,px,py);
+    PointTy o1 = oriented_area_2d<PointTy>(A.first,A.second,B.first,B.second,px,py);
+    PointTy o2 = oriented_area_2d<PointTy>(B.first,B.second,C.first,C.second,px,py);
+    PointTy o3 = oriented_area_2d<PointTy>(C.first,C.second,A.first,A.second,px,py);
 
     const PointTy zero{0};
     bool pos1 = o1 > zero && !double_cmp(o1, zero);
@@ -342,26 +380,27 @@ bool intersect_triangle_with_triangle_in_2D(const Triangle<PointTy> &t1, const T
     bool has_pos = pos1 || pos2 || pos3;
     bool has_neg = neg1 || neg2 || neg3;
 
-    // если есть строго отрицательные и строго положительные => точка вне
+    // if there are strictly negative and strictly positive values => point outside
     return !(has_pos && has_neg);
   };
 
-  // проверка пересечения ребер
+  // checking the intersection of edges
   using Point_2D = std::pair<PointTy, PointTy>;
 
   auto edges = [](const Point_2D &A, const Point_2D &B, const Point_2D &C)
   {
-      return std::array<std::pair<Point_2D, Point_2D>, 3> {std::pair{A, B},
-                                                           std::pair{B, C},
-                                                           std::pair{C, A}};
+      return std::array<std::pair<Point_2D, Point_2D>, 3> { std::pair{A, B},
+                                                            std::pair{B, C},
+                                                            std::pair{C, A} };
   };
 
-  auto seg_intersect = [&](const Point_2D &A, const Point_2D &B, const Point_2D &C, const Point_2D& D)
+  auto seg_intersect = [&](const Point_2D &A, const Point_2D &B,
+                           const Point_2D &C, const Point_2D &D)
   {
-      return segments_intersect_2d (A.first, A.second,
-                                    B.first, B.second,
-                                    C.first, C.second,
-                                    D.first, D.second);
+      return segments_intersect_2d<PointTy>(A.first, A.second,
+                                            B.first, B.second,
+                                            C.first, C.second,
+                                            D.first, D.second);
   };
 
   auto e1 = edges(a1, b1, c1);
@@ -376,18 +415,17 @@ bool intersect_triangle_with_triangle_in_2D(const Triangle<PointTy> &t1, const T
       }
   }
 
-  // проверим вложенность, то есть вершина одного треуг. внутри или на границе другого
-  if (point_inside_triangle_2d(a1.first,a1.second, a2,b2,c2)) return true;
-  if (point_inside_triangle_2d(a2.first,a2.second, a1,b1,c1)) return true;
+  // check the nesting, that is, the vertex of one triangle. is inside or on the border of another
+  if (point_inside_triangle_2d(a1.first, a1.second, a2, b2, c2)) return true;
+  if (point_inside_triangle_2d(a2.first, a2.second, a1, b1, c1)) return true;
 
-  return false; // нет пересения
+  return false;
 }
-
 
 template <typename PointTy = double>
 bool intersect_triangle_with_line_in_3D(const Triangle<PointTy> &t1, const Triangle<PointTy> &t2)
 {
-  Line<PointTy> line = get_line_from_triangle(t2); // из вырожденного треугольника получаем отрезок
+  Line<PointTy> line = get_line_from_triangle(t2); // from a degenerate triangle we get a segment
 
   Vector<PointTy> e1 = vector_from_point(t1.get_b() - t1.get_a());
   Vector<PointTy> e2 = vector_from_point(t1.get_c() - t1.get_a());
@@ -397,11 +435,11 @@ bool intersect_triangle_with_line_in_3D(const Triangle<PointTy> &t1, const Trian
 
   if (double_cmp(det, PointTy{0}))
   {
-    // берем две разные точки вырожденного треугольника t2 как концы сегмента
+    // we take two different points of the degenerate triangle t2 as the ends of the segment
     Point<PointTy> p = t2.get_a();
     Point<PointTy> q = t2.get_b();
 
-    // если первые две совпали
+    // if the first two match
     if (p == q)
       q = t2.get_c();
 

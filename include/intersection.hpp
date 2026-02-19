@@ -35,14 +35,14 @@ Shape<PointTy> make_shape_from_points(const Point<PointTy> &a,
                                       const Point<PointTy> &b,
                                       const Point<PointTy> &c)
 {
-    // все три точки совпали
+    // all 3 points matched
     if (a == b && b == c)
         return a;
 
-    // if коллинеарны or есть совпадающие вершины
+    // if they are collinear or have matching vertices
     if (a == b || b == c || a == c || three_points_on_one_line(a, b, c))
     {
-        // берём две разные точки
+        // we take two different points
         Point<PointTy> p = a;
         Point<PointTy> q = b;
 
@@ -56,7 +56,7 @@ Shape<PointTy> make_shape_from_points(const Point<PointTy> &a,
         return l;
     }
 
-    // иначе Triangle
+    // otherwise Triangle
     return Triangle<PointTy>(a, b, c);
 }
 

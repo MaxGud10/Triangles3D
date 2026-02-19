@@ -17,8 +17,8 @@ template <typename PointTy = double>
 class Interval
 {
 public:
-    Point<PointTy> p1; // первая точка интервала
-    Point<PointTy> p2; // вторая точка интервала
+    Point<PointTy> p1; // the first point of the interval
+    Point<PointTy> p2; // the second point of the interval
 
     bool valid() const { return p1.valid() && p2.valid(); }
 

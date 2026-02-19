@@ -89,10 +89,10 @@ public:
     return A * x1 + B * y1 + C * z1 + D;
   }
 
-  // // используется double_cmp() для сравнения с эпсилоном, чтобы учесть ошибки округления.
+  // double_cmp() is used for comparison with epsilon to account for rounding errors
   bool almost_equal(const Plane<PointTy> &other) const
   {
-    // проверим на совпадени плоскостей с точностью до знака
+    // we will check for plane coincidence with accuracy to the sign
     if ((double_cmp( A, other.A) && double_cmp( B, other.B) &&
          double_cmp( C, other.C) && double_cmp( D, other.D)) ||
         (double_cmp(-A, other.A) && double_cmp(-B, other.B) &&

@@ -102,7 +102,7 @@ bool three_points_on_one_line(const Point<PointTy> &a, const Point<PointTy> &b, 
     return double_cmp(cr.x, PointTy{0}) && double_cmp(cr.y, PointTy{0}) && double_cmp(cr.z, PointTy{0});
 }
 
-// находим саму линию (точку и напрявляющий вектор) из треугольника который выродился в линию
+// find the line itself (point and direction vector) from a triangle that has degenerated into a line
 template <typename PointTy = double>
 Line<PointTy> get_line_from_triangle(const Triangle<PointTy> &t)
 {
@@ -110,7 +110,7 @@ Line<PointTy> get_line_from_triangle(const Triangle<PointTy> &t)
     const auto& B = t.get_b();
     const auto& C = t.get_c();
 
-    // if все три совпали => линии нет
+    // if all three match => no line
     if (A == B && B == C)
         return {};
 
@@ -127,7 +127,7 @@ Line<PointTy> get_line_from_triangle(const Triangle<PointTy> &t)
     return line;
 }
 
-// лежит ли точка на прямой
+// does the point lie on a straight line
 template <typename PointTy = double>
 bool intersect_line_with_point(const Triangle<PointTy> &t1, const Triangle<PointTy> &t2)
 {

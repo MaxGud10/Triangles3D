@@ -1,15 +1,15 @@
 #pragma once
 
 #include <iostream>
-#include <cmath>   
+#include <cmath>
 #include <limits>
 
 #include "config.hpp"
 
-namespace triangle 
+namespace triangle
 {
 
-template <typename PointTy = double> 
+template <typename PointTy = double>
 struct Point
 {
     static constexpr PointTy NaN = std::numeric_limits<PointTy>::quiet_NaN();
@@ -18,18 +18,18 @@ struct Point
     PointTy y = NaN;
     PointTy z = NaN;
 
-    bool valid() const 
+    bool valid() const
     {
         return !std::isnan(x) && !std::isnan(y) && !std::isnan(z);
     }
 
-    void print() const 
+    void print() const
     {
       std::cout << "(" << x << ", " << y << ", " << z << ")" << std::endl;
     }
 
     PointTy norm() const { return x * x + y * y + z * z; } // |p|^2
-    
+
     bool operator==(const Point<PointTy>& other) const = default;
 
     bool almost_equal(const Point<PointTy>& other) const
@@ -38,17 +38,17 @@ struct Point
              double_cmp(z, other.z);
     }
 
-    Point<PointTy> operator+(const Point<PointTy> &other) const 
+    Point<PointTy> operator+(const Point<PointTy> &other) const
     {
       return { x + other.x, y + other.y, z + other.z };
     }
 
-    Point<PointTy> operator-(const Point<PointTy> &other) const 
+    Point<PointTy> operator-(const Point<PointTy> &other) const
     {
       return { x - other.x, y - other.y, z - other.z };
     }
 
-    Point<PointTy> operator*(PointTy s) const // умножение на скаляр
+    Point<PointTy> operator*(PointTy s) const // multiplication by a scalar
     {
         return { x * s, y * s, z * s };
     }
