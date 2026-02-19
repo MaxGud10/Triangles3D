@@ -4,28 +4,94 @@
 #include "point.hpp"
 #include "vector.hpp"
 
-namespace triangle 
+namespace triangle
 {
 
 template <typename PointTy> class Triangle;
 
-template <typename PointTy = double> 
-struct Line 
+template <typename PointTy = double>
+struct Line
 {
-  Vector<PointTy> vector; // направляющий вектор
-  Point <PointTy> point; // опорная точка P0 на линии
+  Vector<PointTy> vector; // guiding vector
+  Point <PointTy> point;  // reference point P0 on the line
 
   bool valid() const { return vector.valid() && point.valid(); }
 
-  void print() const 
+  void print() const
   {
     std::cout << "x = " << vector.x << "t + " << point.x << std::endl;
     std::cout << "y = " << vector.y << "t + " << point.y << std::endl;
     std::cout << "z = " << vector.z << "t + " << point.z << std::endl;
   }
+
+  // does the point lie on a straight line
+  bool is_point_on_line(const Point<PointTy> &point) const
+  {
+      Vector<PointTy> v  = vector_from_point(point - this->point);
+      Vector<PointTy> cr = cross(v, vector);
+
+      return double_cmp(cr.x, PointTy{0}) &&
+             double_cmp(cr.y, PointTy{0}) &&
+             double_cmp(cr.z, PointTy{0});
+  }
+
+  // comparing two straight lines
+  bool equal(const Line<PointTy> &other) const
+  {
+    Vector<PointTy> cross_res = cross(vector_from_point(this->point - other.point), other.vector);
+
+    if (double_cmp(cross_res.x, PointTy{0}) && double_cmp(cross_res.y, PointTy{0}) &&
+        double_cmp(cross_res.z, PointTy{0}))
+    {
+      return true;
+    }
+
+    return false;
+  }
+
+  // inter_line = P0 + s*d0; line = P1 + t*d1 [in 3D]
+  Point<PointTy> intersect_line_with_line(const Line<PointTy> &other) const
+  {
+    Point<PointTy> res{NAN, NAN, NAN};
+
+    const Vector<PointTy> &u  = this->vector;
+    const Vector<PointTy> &v  = other.vector;
+          Vector<PointTy>  w0 = vector_from_point(this->point - other.point);
+
+    PointTy A = dot(u, u);
+    PointTy B = dot(u, v);
+    PointTy C = dot(v, v);
+    PointTy D = dot(u, w0);
+    PointTy E = dot(v, w0);
+
+    PointTy denom = A * C - B * B;
+    if (double_cmp(denom, PointTy{0})) // lines are parallel
+      return res;
+
+    // non-parallel lines
+    PointTy s = (B * E - C * D) / denom;
+    PointTy t = (A * E - B * D) / denom;
+
+    // points of closest approach on each straight line
+    Point<PointTy> p1 = this->point + u * s;
+
+    Point<PointTy> p2 = other.point + v * t;
+
+    // the distance between the nearest points on straight lines
+    Vector<PointTy> diff  = vector_from_point(p1 - p2);
+          PointTy   dist2 = dot(diff, diff);
+
+    // if the lines do not lie in the same plane (they are crossed) - dist2 > 0
+    if (!double_cmp(dist2, PointTy{0}))
+      return res;
+
+    // lines in the same plane -> return the intersection point on the second line
+    return p2;
+  }
+
 };
 
-// проверяем, что 3 точки лежит на одной прямой
+// we check that the 3 points lie on the same line
 template <typename PointTy = double>
 bool three_points_on_one_line(const Point<PointTy> &a, const Point<PointTy> &b, const Point<PointTy> &c)
 {
@@ -34,76 +100,6 @@ bool three_points_on_one_line(const Point<PointTy> &a, const Point<PointTy> &b, 
     Vector<PointTy> cr = cross(AB, AC);
 
     return double_cmp(cr.x, PointTy{0}) && double_cmp(cr.y, PointTy{0}) && double_cmp(cr.z, PointTy{0});
-}
-
-// лежит ли точка на прямой
-template <typename PointTy = double>
-bool is_point_on_line(const Point<PointTy> &point, const Line<PointTy> &line)
-{
-    Vector<PointTy> v  = vector_from_point(point - line.point);
-    Vector<PointTy> cr = cross(v, line.vector);
-
-    return double_cmp(cr.x, PointTy{0}) &&
-           double_cmp(cr.y, PointTy{0}) &&
-           double_cmp(cr.z, PointTy{0});
-}
-
-
-// сравниваем две прямые 
-template <typename PointTy = double>
-bool equal(const Line<PointTy> &line1, const Line<PointTy> &line2) 
-{
-  Vector<PointTy> cross_res = cross(vector_from_point(line1.point - line2.point), line2.vector);
-
-  if (double_cmp(cross_res.x, PointTy{0}) && double_cmp(cross_res.y, PointTy{0}) &&
-      double_cmp(cross_res.z, PointTy{0}))
-  {
-    return true;
-  }
-
-  return false;
-}
-
-
-// inter_line = P0 + s*d0; line = P1 + t*d1 [in 3D]
-template <typename PointTy = double>
-Point<PointTy> intersect_line_with_line(const Line<PointTy> &line1, const Line<PointTy> &line2) 
-{
-  Point<PointTy> point{NAN, NAN, NAN};
-
-  const Vector<PointTy>& u  = line1.vector;
-  const Vector<PointTy>& v  = line2.vector;
-        Vector<PointTy>  w0 = vector_from_point(line1.point - line2.point);
-
-  PointTy A = dot(u, u);
-  PointTy B = dot(u, v);
-  PointTy C = dot(v, v);
-  PointTy D = dot(u, w0);
-  PointTy E = dot(v, w0);
-
-  PointTy denom = A * C - B * B;
-  if (double_cmp(denom, PointTy{0})) // прямые параллельны
-    return point;
-
-  // непараллельные прямые
-  PointTy s = (B * E - C * D) / denom;
-  PointTy t = (A * E - B * D) / denom; 
-
-  // точки ближайшего подхода на каждой прямой
-  Point<PointTy> p1 = line1.point + u * s;
-
-  Point<PointTy> p2 = line2.point + v * t;
-
-  // расстояние между ближайшими точками на прямых
-  Vector<PointTy> diff  = vector_from_point(p1 - p2);
-         PointTy  dist2 = dot(diff, diff);
-
-  // если прямые не лежат в одной плоскости (скрещиваются) — dist2 > 0
-  if (!double_cmp(dist2, PointTy{0}))
-    return point;
-
-  // прямые в одной плоскости —> возвращаем точку пересечения на второй прямой
-  return p2; 
 }
 
 // находим саму линию (точку и напрявляющий вектор) из треугольника который выродился в линию
@@ -121,8 +117,8 @@ Line<PointTy> get_line_from_triangle(const Triangle<PointTy> &t)
     Point<PointTy> p = A;
     Point<PointTy> q = B;
 
-    if (p == q) 
-      q = C; 
+    if (p == q)
+      q = C;
 
     Line<PointTy> line{};
     line.point  = p;
@@ -133,14 +129,14 @@ Line<PointTy> get_line_from_triangle(const Triangle<PointTy> &t)
 
 // лежит ли точка на прямой
 template <typename PointTy = double>
-bool intersect_line_with_point(const Triangle<PointTy> &t1, const Triangle<PointTy> &t2) 
+bool intersect_line_with_point(const Triangle<PointTy> &t1, const Triangle<PointTy> &t2)
 {
   Line <PointTy> line  = get_line_from_triangle(t1);
   Point<PointTy> point = t2.get_a();
 
   Vector<PointTy> cross_res = cross(vector_from_point(point - line.point), line.vector);
   if (double_cmp(cross_res.x, PointTy{0}) && double_cmp(cross_res.y, PointTy{0}) &&
-      double_cmp(cross_res.z, PointTy{0})) 
+      double_cmp(cross_res.z, PointTy{0}))
   {
     return true;
   }

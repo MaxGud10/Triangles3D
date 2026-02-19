@@ -24,9 +24,9 @@ template <typename PointTy>
 Triangle<PointTy> make_triangle_from_line(const Line<PointTy>& l)
 {
     const Point<PointTy> p1 = l.point;
-    const Point<PointTy> p2 = l.point + l.vector; 
+    const Point<PointTy> p2 = l.point + l.vector;
 
-    // треугольник с двумя совпадающими вершинами
+    // triangle with two coinciding vertices
     return Triangle<PointTy>(p1, p2, p2);
 }
 
@@ -35,23 +35,23 @@ Shape<PointTy> make_shape_from_points(const Point<PointTy> &a,
                                       const Point<PointTy> &b,
                                       const Point<PointTy> &c)
 {
-    // все три точки совпали 
+    // все три точки совпали
     if (a == b && b == c)
         return a;
 
-    // if коллинеарны or есть совпадающие вершины 
+    // if коллинеарны or есть совпадающие вершины
     if (a == b || b == c || a == c || three_points_on_one_line(a, b, c))
     {
         // берём две разные точки
         Point<PointTy> p = a;
         Point<PointTy> q = b;
 
-        if (p == q) 
+        if (p == q)
             q = c;
 
         Line<PointTy> l;
         l.point  = p;
-        l.vector = vector_from_point(q - p); 
+        l.vector = vector_from_point(q - p);
 
         return l;
     }
