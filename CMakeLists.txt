@@ -1,23 +1,31 @@
-cmake_minimum_required(VERSION 3.11)
-
-project("Triangles")
+cmake_minimum_required(VERSION 3.16)
+project(Triangles LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-include_directories(include/)
+add_compile_definitions(PROJECT_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 
-add_executable(triag src/main.cpp)
+add_executable(triag
+    src/cli/main.cpp
+)
 
+target_include_directories(triag PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+)
 
 enable_testing()
 
 find_package(GTest REQUIRED)
 add_executable(google_test src/google_test.cpp)
-target_link_libraries(google_test GTest::gtest_main)
 
+target_include_directories(google_test PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+)
+
+target_link_libraries(google_test PRIVATE GTest::gtest_main)
 add_test(NAME google_test COMMAND google_test)
-
 
 add_test(
   NAME e2e_all
@@ -33,5 +41,45 @@ add_custom_target(check
 add_dependencies(check triag google_test)
 
 
-set_tests_properties(google_test PROPERTIES LABELS "unit")
-set_tests_properties(e2e_all     PROPERTIES LABELS "e2e" )
+option(GRAPHICS "Build OpenGL viewer" OFF)
+message(STATUS "GRAPHICS enabled: ${GRAPHICS}")
+
+if (GRAPHICS)
+    cmake_policy(SET CMP0072 NEW)
+    set(OpenGL_GL_PREFERENCE GLVND)
+
+    find_package(OpenGL REQUIRED)
+    find_package(GLEW REQUIRED)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(GLFW REQUIRED glfw3)
+
+    add_executable(opengl_viewer
+        src/opengl/main.cpp
+    )
+
+    target_include_directories(opengl_viewer PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/OpenGL/include
+        ${GLEW_INCLUDE_DIRS}
+        ${GLFW_INCLUDE_DIRS}
+    )
+
+    target_link_directories(opengl_viewer PRIVATE
+        ${GLEW_LIBRARY_DIRS}
+        ${GLFW_LIBRARY_DIRS}
+    )
+
+    target_link_libraries(opengl_viewer PRIVATE
+        OpenGL::GL
+        ${GLEW_LIBRARIES}
+        ${GLFW_LIBRARIES}
+    )
+
+    add_custom_command(TARGET opengl_viewer POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+                $<TARGET_FILE_DIR:opengl_viewer>/shaders
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+                ${CMAKE_SOURCE_DIR}/OpenGL/shaders
+                $<TARGET_FILE_DIR:opengl_viewer>/shaders
+    )
+endif()
