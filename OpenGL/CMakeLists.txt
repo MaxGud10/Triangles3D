@@ -1,8 +1,9 @@
-cmake_minimum_required(VERSION 3.10)
-project(OpenGL)
+cmake_minimum_required(VERSION 3.16)
+project(OpenGL LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 cmake_policy(SET CMP0072 NEW)
 set(OpenGL_GL_PREFERENCE GLVND)
@@ -10,31 +11,33 @@ set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(PkgConfig REQUIRED)
-pkg_search_module(GLFW REQUIRED glfw3)
 
-add_executable(main
+pkg_check_modules(GLFW REQUIRED glfw3)
+
+add_executable(opengl_viewer
     src/main.cpp
-    src/shader.cpp
-    src/VAO.cpp
-    src/VBO.cpp
-    src/EBO.cpp
-    src/camera.cpp
 )
 
-target_include_directories(main PRIVATE
+target_include_directories(opengl_viewer PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/../include
-    ${GLEW_INCLUDE_DIRS}
     ${GLFW_INCLUDE_DIRS}
 )
 
-target_link_directories(main PRIVATE
-    ${GLEW_LIBRARY_DIRS}
-    ${GLFW_LIBRARY_DIRS}
+target_link_libraries(opengl_viewer PRIVATE
+    OpenGL::OpenGL
+    OpenGL::GLX
+    GLEW::GLEW
 )
 
-target_link_libraries(main PRIVATE
-    OpenGL::GL
-    ${GLEW_LIBRARIES}
-    ${GLFW_LIBRARIES}
+if (TARGET PkgConfig::GLFW)
+    target_link_libraries(opengl_viewer PRIVATE PkgConfig::GLFW)
+else()
+    target_link_libraries(opengl_viewer PRIVATE ${GLFW_LIBRARIES})
+    target_link_directories(opengl_viewer PRIVATE ${GLFW_LIBRARY_DIRS})
+    target_compile_options(opengl_viewer PRIVATE ${GLFW_CFLAGS_OTHER})
+endif()
+
+target_compile_options(opengl_viewer PRIVATE
+    $<$<CONFIG:Debug>:-Wall -Wextra -Wpedantic>
 )

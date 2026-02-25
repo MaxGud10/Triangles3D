@@ -237,7 +237,7 @@ int main(int argc, char** argv)
     Shader shaderProgram("../shaders/vertex.vert", "../shaders/fragment.frag");
 
     VAO vao;
-    vao.Bind();
+    vao.bind();
 
 
     VBO vbo(reinterpret_cast<GLfloat*>(vertices.data()),
@@ -247,8 +247,8 @@ int main(int argc, char** argv)
     vao.LinkAttrib(vbo, 1, 3, GL_FLOAT, 9 * sizeof(float), (void*)(3 * sizeof(float)));
     vao.LinkAttrib(vbo, 2, 3, GL_FLOAT, 9 * sizeof(float), (void*)(6 * sizeof(float)));
 
-    vao.Unbind();
-    vbo.Unbind();
+    vao.unbind();
+    vbo.unbind();
 
     Camera camera(width, height, glm::vec3(0.0f, 0.0f, 5.0f));
 
@@ -260,22 +260,18 @@ int main(int argc, char** argv)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shaderProgram.Activate();
-        glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), 5.0f, 5.0f, 5.0f);
+        glUniform3f(glGetUniformLocation(shaderProgram.id(), "lightPos"), 5.0f, 5.0f, 5.0f);
 
         camera.Inputs(window);
-        camera.Matrix(45.0f, 0.1f, 100.0f, shaderProgram, "camMatrix");
+        camera.SetMatrix(45.0f, 0.1f, 100.0f, shaderProgram, "camMatrix");
 
-        vao.Bind();
+        vao.bind();
 
         GLsizei vertexCount = static_cast<GLsizei>(vertices.size() / 9);
         glDrawArrays(GL_TRIANGLES, 0, vertexCount);
 
         glfwSwapBuffers(window);
     }
-
-    vao.Delete();
-    vbo.Delete();
-    shaderProgram.Delete();
 
     glfwDestroyWindow(window);
     glfwTerminate();
