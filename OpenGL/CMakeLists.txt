@@ -50,7 +50,6 @@ set(MAIN_SOURCES
     src/VBO.cpp
     src/EBO.cpp
     src/camera.cpp
-    ../src/config.cpp   
 )
 
 add_executable(main ${MAIN_SOURCES})
@@ -62,10 +61,3 @@ target_link_libraries(main
     ${GLFW_LIBRARIES}
     ${GLUT_LIBRARIES}
 )
-
-make_program(camera1 learnOpenGL/camera1.cpp)
-make_program(camera2 learnOpenGL/camera2.cpp)
-make_program(hello_triangle learnOpenGL/hello_triangle.cpp)
-make_program(math_prog learnOpenGL/math.cpp)
-make_program(shaders_1 learnOpenGL/shaders_1.cpp)
-make_program(shaders_2 learnOpenGL/shaders_2.cpp)

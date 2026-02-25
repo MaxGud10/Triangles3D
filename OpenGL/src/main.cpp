@@ -30,10 +30,11 @@ const char*    SCREEN_NAME   = "TRIANGLES VISUALIZER";
 
 using PointTy    = double;
 using Triangle3D = triangle::Triangle<PointTy>;
+using ShapeTy    = triangle::ShapeWithId<PointTy>;
 
 
 bool load_triangles_from_stream(std::istream& in,
-                                std::vector<Triangle3D>& triangles)
+                                std::vector<ShapeTy>& triangles)
 {
     size_t triag_num = 0;
     if (!(in >> triag_num))
@@ -57,17 +58,26 @@ bool load_triangles_from_stream(std::istream& in,
             return false;
         }
 
-        Triangle3D tri(x1, y1, z1,
-                       x2, y2, z2,
-                       x3, y3, z3);
-        tri.id = i;
-        triangles.push_back(tri);
+        triangle::Point<PointTy> p1 {x1, y1, z1};
+        triangle::Point<PointTy> p2 {x2, y2, z2};
+        triangle::Point<PointTy> p3 {x3, y3, z3};
+
+        Triangle3D tri(p1, p2, p3);
+
+        ShapeTy item;
+        item.shape = tri;
+        item.id    = i;
+
+        item.min_bound = { tri.min_x(), tri.min_y(), tri.min_z() };
+        item.max_bound = { tri.max_x(), tri.max_y(), tri.max_z() };
+
+        triangles.push_back(item);
     }
 
     return true;
 }
 
-std::vector<bool> mark_intersected_triangles(const std::vector<Triangle3D>& triangles)
+std::vector<bool> mark_intersected_triangles(const std::vector<ShapeTy>& triangles)
 {
     using triangle::Octotree;
     using triangle::BoundingBox;
@@ -78,17 +88,18 @@ std::vector<bool> mark_intersected_triangles(const std::vector<Triangle3D>& tria
     if (n == 0)
         return intersected;
 
-    std::vector<Triangle3D> input = triangles;
+    std::vector<ShapeTy> input = triangles;
 
-    Octotree<PointTy> octotree(input, input.size());
+    Octotree<PointTy> octotree(input);
     octotree.divide_tree();
 
     std::map<size_t, size_t> result;
-    std::deque<BoundingBox<PointTy>> cells = octotree.get_cells();
 
-    for (auto cell : cells)
+    const auto& cells = octotree.get_cells();
+    for (const auto& cell : cells)
     {
-        cell.group_intersections(result);
+        auto tmp = cell;
+        tmp.group_intersections(result);
     }
 
     for (auto& [id, _] : result)
@@ -100,7 +111,7 @@ std::vector<bool> mark_intersected_triangles(const std::vector<Triangle3D>& tria
     return intersected;
 }
 
-void build_vertex_buffer(const std::vector<Triangle3D>& triangles,
+void build_vertex_buffer(const std::vector<ShapeTy>& triangles,
                          const std::vector<bool>& intersected,
                          std::vector<float>& vertices)
 {
@@ -109,18 +120,23 @@ void build_vertex_buffer(const std::vector<Triangle3D>& triangles,
 
     for (size_t i = 0; i < triangles.size(); ++i)
     {
-        const auto& tri = triangles[i];
-        const auto& A = tri.get_a();
-        const auto& B = tri.get_b();
-        const auto& C = tri.get_c();
+        const auto& item = triangles[i];
 
-        glm::vec3 v1(B.x - A.x, B.y - A.y, B.z - A.z);
-        glm::vec3 v2(C.x - A.x, C.y - A.y, C.z - A.z);
+        const Triangle3D* tri = std::get_if<Triangle3D>(&item.shape);
+        if (!tri)
+            continue;
+
+        const auto& A = tri->get_a();
+        const auto& B = tri->get_b();
+        const auto& C = tri->get_c();
+
+        glm::vec3 v1((float)(B.x - A.x), (float)(B.y - A.y), (float)(B.z - A.z));
+        glm::vec3 v2((float)(C.x - A.x), (float)(C.y - A.y), (float)(C.z - A.z));
         glm::vec3 normal = glm::normalize(glm::cross(v1, v2));
 
         float r, g, b;
-        if (intersected[i]) { r = 0.9f; g = 0.1f; b = 0.1f; }
-        else                { r = 0.7f; g = 0.7f; b = 0.7f; }
+        if (item.id < intersected.size() && intersected[item.id]) { r = 0.9f; g = 0.1f; b = 0.1f; }
+        else                                                     { r = 0.7f; g = 0.7f; b = 0.7f; }
 
         auto pushV = [&](const triangle::Point<PointTy>& p)
         {
@@ -146,7 +162,7 @@ void build_vertex_buffer(const std::vector<Triangle3D>& triangles,
 
 int main(int argc, char** argv)
 {
-    std::vector<Triangle3D> triangles;
+    std::vector<ShapeTy> triangles;
 
     if (argc > 1)
     {
@@ -253,7 +269,7 @@ int main(int argc, char** argv)
 
         vao.Bind();
 
-        GLsizei vertexCount = static_cast<GLsizei>(vertices.size() / 6); 
+        GLsizei vertexCount = static_cast<GLsizei>(vertices.size() / 9);
         glDrawArrays(GL_TRIANGLES, 0, vertexCount);
 
         glfwSwapBuffers(window);
