@@ -1,5 +1,3 @@
-// src/main.cpp
-
 #define GLM_ENABLE_EXPERIMENTAL
 
 #include <GL/glew.h>
@@ -24,7 +22,7 @@
 #include "triangles.hpp"
 
 
-const uint32_t SCREEN_WIDTH  = 1000;
+const uint32_t SCREEN_WIDTH  = 1000; // TODO: constexper
 const uint32_t SCREEN_HEIGHT = 800;
 const char*    SCREEN_NAME   = "TRIANGLES VISUALIZER";
 

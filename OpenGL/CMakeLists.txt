@@ -4,46 +4,15 @@ project(OpenGL)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 11)
 
-include_directories(${CMAKE_SOURCE_DIR}/../include)
-include_directories(${CMAKE_SOURCE_DIR}/../src)
-
-include_directories(include)
+cmake_policy(SET CMP0072 NEW)
+set(OpenGL_GL_PREFERENCE GLVND)
 
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
-find_package(GLUT REQUIRED)
-find_package(GLU REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_search_module(GLFW REQUIRED glfw3)
 
-set(GLAD_SOURCE src/glad.c)
-set(GLAD_INCLUDE include/glad)
-
-include_directories(
-    ${GLEW_INCLUDE_DIRS}
-    ${GLFW_INCLUDE_DIRS}
-    ${GLUT_INCLUDE_DIRS}
-    ${GLAD_INCLUDE}
-)
-
-link_directories(
-    ${GLEW_LIBRARY_DIRS}
-    ${GLFW_LIBRARY_DIRS}
-    ${GLUT_LIBRARY_DIRS}
-)
-
-function(make_program name source)
-    add_executable(${name} ${source})
-    target_link_libraries(${name}
-        OpenGL::GL
-        GLU
-        ${GLEW_LIBRARIES}
-        ${GLFW_LIBRARIES}
-        ${GLUT_LIBRARIES}
-    )
-endfunction()
-
-set(MAIN_SOURCES
+add_executable(main
     src/main.cpp
     src/shader.cpp
     src/VAO.cpp
@@ -52,12 +21,20 @@ set(MAIN_SOURCES
     src/camera.cpp
 )
 
-add_executable(main ${MAIN_SOURCES})
+target_include_directories(main PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include
+    ${GLEW_INCLUDE_DIRS}
+    ${GLFW_INCLUDE_DIRS}
+)
 
-target_link_libraries(main
+target_link_directories(main PRIVATE
+    ${GLEW_LIBRARY_DIRS}
+    ${GLFW_LIBRARY_DIRS}
+)
+
+target_link_libraries(main PRIVATE
     OpenGL::GL
-    GLU
     ${GLEW_LIBRARIES}
     ${GLFW_LIBRARIES}
-    ${GLUT_LIBRARIES}
 )

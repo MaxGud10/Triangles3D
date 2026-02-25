@@ -2,7 +2,6 @@
 
 VAO::VAO() {
     glGenVertexArrays(1, &ID);
-
 }
 
 void VAO::LinkAttrib(VBO VBO, GLuint layout, GLuint numComponents, GLenum type, GLsizeiptr stride, void* offset) {
