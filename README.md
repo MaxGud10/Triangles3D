@@ -151,6 +151,7 @@ cmake --build build/
 ```bash
 cd build/
 ./opengl_viewer < tests/data/common/3.dat
+```
 
 ###### Структура проекта
 ```
@@ -164,9 +165,10 @@ cd build/
 │   ├── VAO.hpp
 │   ├── VBO.hpp
 │   └── vector.hpp
-├── shaders
-   ├── fragment.frag
-   └── vertex.vert
+└── shaders
+    ├── fragment.frag
+    └── vertex.vert
+
 ```
 
 `shader.hpp` - класс на C++ загрузки и компиляции шейдеров в OpenGL. Примеры шейдеров можно найти [здесь](./OpenGL/shaders/).
