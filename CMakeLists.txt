@@ -7,39 +7,16 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_compile_definitions(PROJECT_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 
+add_library(triangles_headers INTERFACE)
+target_include_directories(triangles_headers INTERFACE
+    ${CMAKE_SOURCE_DIR}/include
+)
+
+
 add_executable(triag
     src/cli/main.cpp
 )
-
-target_include_directories(triag PRIVATE
-    ${CMAKE_SOURCE_DIR}/include
-)
-
-enable_testing()
-
-find_package(GTest REQUIRED)
-add_executable(google_test src/google_test.cpp)
-
-target_include_directories(google_test PRIVATE
-    ${CMAKE_SOURCE_DIR}/include
-)
-
-target_link_libraries(google_test PRIVATE GTest::gtest_main)
-add_test(NAME google_test COMMAND google_test)
-
-add_test(
-  NAME e2e_all
-  COMMAND ${CMAKE_COMMAND} -E env
-          PYTHONUNBUFFERED=1
-          python3 ${CMAKE_SOURCE_DIR}/end2end/run_e2e_tests.py
-          $<TARGET_FILE:triag>
-)
-
-add_custom_target(check
-  COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-)
-add_dependencies(check triag google_test)
-
+target_link_libraries(triag PRIVATE triangles_headers)
 
 option(GRAPHICS "Build OpenGL viewer" OFF)
 message(STATUS "GRAPHICS enabled: ${GRAPHICS}")
@@ -57,8 +34,14 @@ if (GRAPHICS)
         src/opengl/main.cpp
     )
 
+    target_link_libraries(opengl_viewer PRIVATE
+        triangles_headers
+        OpenGL::GL
+        ${GLEW_LIBRARIES}
+        ${GLFW_LIBRARIES}
+    )
+
     target_include_directories(opengl_viewer PRIVATE
-        ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/OpenGL/include
         ${GLEW_INCLUDE_DIRS}
         ${GLFW_INCLUDE_DIRS}
@@ -69,12 +52,6 @@ if (GRAPHICS)
         ${GLFW_LIBRARY_DIRS}
     )
 
-    target_link_libraries(opengl_viewer PRIVATE
-        OpenGL::GL
-        ${GLEW_LIBRARIES}
-        ${GLFW_LIBRARIES}
-    )
-
     add_custom_command(TARGET opengl_viewer POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory
                 $<TARGET_FILE_DIR:opengl_viewer>/shaders
@@ -83,3 +60,11 @@ if (GRAPHICS)
                 $<TARGET_FILE_DIR:opengl_viewer>/shaders
     )
 endif()
+
+enable_testing()
+add_subdirectory(tests)
+
+add_custom_target(check
+  COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+)
+add_dependencies(check triag)
