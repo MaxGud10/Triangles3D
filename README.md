@@ -63,7 +63,7 @@ ctest -L e2e --output-on-failure
 
 **Unit tests**
 ```bash
-./build/google_test
+./build/google_test_
 
 ./build/google_test --gtest_list_tests
 
@@ -140,6 +140,18 @@ OUTPUT:
 
 >В данном уровне реализуется визуализация треугольников с помощью **OpenGL** 3.3.
 
+
+# Компиляция
+```bash
+cmake -S ./ -B build/ -DCMAKE_BUILD_TYPE=Release -DGRAPHICS=ON
+cmake --build build/
+```
+
+Запуск проекта:
+```bash
+cd build/
+./opengl_viewer < tests/data/common/3.dat
+
 ###### Структура проекта
 ```
 ├── CMakeLists.txt
@@ -153,17 +165,8 @@ OUTPUT:
 │   ├── VBO.hpp
 │   └── vector.hpp
 ├── shaders
-│   ├── fragment.frag
-│   └── vertex.vert
-└── src
-    ├── camera.cpp
-    ├── EBO.cpp
-    ├── google_test.cpp
-    ├── main.cpp
-    ├── shader.cpp
-    ├── VAO.cpp
-    └── VBO.cpp
-
+   ├── fragment.frag
+   └── vertex.vert
 ```
 
 `shader.hpp` - класс на C++ загрузки и компиляции шейдеров в OpenGL. Примеры шейдеров можно найти [здесь](./OpenGL/shaders/).
@@ -185,6 +188,7 @@ OUTPUT:
 ![](./img/ebo%20explanation.jpeg)
 
 `Camera.hpp` - класс для работы с камерой в OpenGL. Задается тремя параметрами - `camPos` (координаты камеры), `camDir` (направление взгляда камеры), `upDir` (вектор, который мы задаем для определения _верха_)
+
 
 Камерой можно управлять с помощью горячих клавиш.
 | Input | Desc |

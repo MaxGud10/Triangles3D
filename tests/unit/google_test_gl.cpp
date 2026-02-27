@@ -12,9 +12,6 @@
 #include "VAO.hpp"
 #include "VBO.hpp"
 
-// -------------------------
-// helpers
-// -------------------------
 static void write_text_file(const std::string& path, const std::string& text)
 {
     std::ofstream out(path, std::ios::binary);
@@ -31,9 +28,6 @@ static void expect_no_gl_error(const char* where)
     EXPECT_EQ(err, GL_NO_ERROR) << where << " glGetError() = " << err;
 }
 
-// -------------------------
-// fixture: one GL context for tests
-// -------------------------
 class GLContextFixture : public ::testing::Test
 {
 protected:
@@ -44,7 +38,6 @@ protected:
         if (glfwInit() != GLFW_TRUE)
             throw std::runtime_error("glfwInit failed");
 
-        // invisible window + core profile
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -72,7 +65,6 @@ protected:
                 reinterpret_cast<const char*>(glewGetErrorString(glew_ok)));
         }
 
-        // after glewInit бывает GL_INVALID_ENUM — чистим
         while (glGetError() != GL_NO_ERROR) {}
 
         glViewport(0, 0, 64, 64);
@@ -93,12 +85,8 @@ protected:
     }
 };
 
-// -------------------------
-// tests
-// -------------------------
 TEST_F(GLContextFixture, CanCompileLinkShaderProgram)
 {
-    // делаем временные шейдеры рядом с тестом (cwd = build)
     const std::string vpath = "tmp_unit_vertex.vert";
     const std::string fpath = "tmp_unit_fragment.frag";
 
@@ -141,7 +129,6 @@ TEST_F(GLContextFixture, CanCreateBuffersAndDrawTriangleWithoutErrors)
 
     Shader shader(vpath.c_str(), fpath.c_str());
 
-    // 3 вершины, только position
     const std::vector<float> vertices = {
         -0.5f, -0.5f, 0.0f,
          0.5f, -0.5f, 0.0f,
@@ -154,7 +141,6 @@ TEST_F(GLContextFixture, CanCreateBuffersAndDrawTriangleWithoutErrors)
     VBO vbo(const_cast<GLfloat*>(vertices.data()),
             static_cast<GLsizeiptr>(vertices.size() * sizeof(float)));
 
-    // layout=0, vec3, stride = 3 float
     vao.LinkAttrib(vbo, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
 
     vao.unbind();

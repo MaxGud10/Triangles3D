@@ -17,6 +17,8 @@
 #include <string>
 #include <unordered_set>
 #include <vector>
+#include <limits>
+#include <cmath>
 
 #include "shader.hpp"
 #include "VAO.hpp"
@@ -152,7 +154,7 @@ static void build_vertex_buffer(const std::vector<TriangleRaw>& triangles,
         else
             normal = glm::vec3(0.0f, 0.0f, 1.0f);
 
-        float r = 0.7f, g = 0.7f, b = 0.7f;
+        float r = 0.1f, g = 0.2f, b = 0.9f;
         if (intersected_ids.contains(i))
         {
             r = 0.9f; g = 0.1f; b = 0.1f;
@@ -177,6 +179,103 @@ static void build_vertex_buffer(const std::vector<TriangleRaw>& triangles,
         pushV(B);
         pushV(C);
     }
+}
+
+struct SceneBounds
+{
+    glm::vec3 min;
+    glm::vec3 max;
+};
+
+static SceneBounds compute_scene_bounds(const std::vector<TriangleRaw>& triangles)
+{
+    SceneBounds b;
+    b.min = glm::vec3( std::numeric_limits<float>::infinity());
+    b.max = glm::vec3(-std::numeric_limits<float>::infinity());
+
+    auto expand = [&](const Point3& p)
+    {
+        b.min.x = std::min(b.min.x, static_cast<float>(p.x));
+        b.min.y = std::min(b.min.y, static_cast<float>(p.y));
+        b.min.z = std::min(b.min.z, static_cast<float>(p.z));
+
+        b.max.x = std::max(b.max.x, static_cast<float>(p.x));
+        b.max.y = std::max(b.max.y, static_cast<float>(p.y));
+        b.max.z = std::max(b.max.z, static_cast<float>(p.z));
+    };
+
+    for (const auto& t : triangles)
+    {
+        expand(t.a);
+        expand(t.b);
+        expand(t.c);
+    }
+
+    if (!std::isfinite(b.min.x) || !std::isfinite(b.max.x))
+    {
+        b.min = glm::vec3(-1.0f);
+        b.max = glm::vec3( 1.0f);
+    }
+
+    return b;
+}
+
+// линии bbox рисуем тем же layout: pos(3) normal(3) color(3) => 9 float
+void build_bbox_lines_vertices(const SceneBounds& b,
+                               std::vector<float>& out_vertices,
+                               const glm::vec3& color,
+                               float padding = 0.0f)
+{
+    out_vertices.clear();
+
+    const glm::vec3 mn = b.min - glm::vec3(padding);
+    const glm::vec3 mx = b.max + glm::vec3(padding);
+
+    const glm::vec3 v000(mn.x, mn.y, mn.z);
+    const glm::vec3 v100(mx.x, mn.y, mn.z);
+    const glm::vec3 v010(mn.x, mx.y, mn.z);
+    const glm::vec3 v110(mx.x, mx.y, mn.z);
+
+    const glm::vec3 v001(mn.x, mn.y, mx.z);
+    const glm::vec3 v101(mx.x, mn.y, mx.z);
+    const glm::vec3 v011(mn.x, mx.y, mx.z);
+    const glm::vec3 v111(mx.x, mx.y, mx.z);
+
+    auto push_vertex = [&](const glm::vec3& p)
+    {
+        out_vertices.push_back(p.x);
+        out_vertices.push_back(p.y);
+        out_vertices.push_back(p.z);
+
+        out_vertices.push_back(0.0f);
+        out_vertices.push_back(0.0f);
+        out_vertices.push_back(0.0f);
+
+        out_vertices.push_back(color.x);
+        out_vertices.push_back(color.y);
+        out_vertices.push_back(color.z);
+    };
+
+    auto push_edge = [&](const glm::vec3& a, const glm::vec3& c)
+    {
+        push_vertex(a);
+        push_vertex(c);
+    };
+
+    push_edge(v000, v100);
+    push_edge(v100, v110);
+    push_edge(v110, v010);
+    push_edge(v010, v000);
+
+    push_edge(v001, v101);
+    push_edge(v101, v111);
+    push_edge(v111, v011);
+    push_edge(v011, v001);
+
+    push_edge(v000, v001);
+    push_edge(v100, v101);
+    push_edge(v110, v111);
+    push_edge(v010, v011);
 }
 
 int main(int argc, char** argv)
@@ -211,6 +310,13 @@ int main(int argc, char** argv)
             std::cerr << "No vertices to draw\n";
             return 0;
         }
+
+        SceneBounds bounds = compute_scene_bounds(triangles);
+
+        std::vector<float> bbox_vertices;
+        build_bbox_lines_vertices(bounds, bbox_vertices,
+                                glm::vec3(0.2f, 0.6f, 1.0f),
+                                0.0f);
 
         if (!glfwInit())
         {
@@ -263,6 +369,19 @@ int main(int argc, char** argv)
         vao.unbind();
         vbo.unbind();
 
+        VAO bbox_vao;
+        bbox_vao.bind();
+
+        VBO bbox_vbo(bbox_vertices.data(),
+                    static_cast<GLsizeiptr>(bbox_vertices.size() * sizeof(float)));
+
+        bbox_vao.LinkAttrib(bbox_vbo, 0, 3, GL_FLOAT, 9 * sizeof(float), (void*)0);
+        bbox_vao.LinkAttrib(bbox_vbo, 1, 3, GL_FLOAT, 9 * sizeof(float), (void*)(3 * sizeof(float)));
+        bbox_vao.LinkAttrib(bbox_vbo, 2, 3, GL_FLOAT, 9 * sizeof(float), (void*)(6 * sizeof(float)));
+
+        bbox_vao.unbind();
+        bbox_vbo.unbind();
+
         Camera camera(width, height, glm::vec3(0.0f, 0.0f, 5.0f));
 
         while (!glfwWindowShouldClose(window))
@@ -282,6 +401,16 @@ int main(int argc, char** argv)
 
             const GLsizei vertexCount = static_cast<GLsizei>(vertices.size() / 9);
             glDrawArrays(GL_TRIANGLES, 0, vertexCount);
+
+            vao.bind();
+            const GLsizei tri_vertex_count = static_cast<GLsizei>(vertices.size() / 9);
+            glDrawArrays(GL_TRIANGLES, 0, tri_vertex_count);
+
+            glDisable(GL_DEPTH_TEST);
+            bbox_vao.bind();
+            const GLsizei bbox_vertex_count = static_cast<GLsizei>(bbox_vertices.size() / 9);
+            glDrawArrays(GL_LINES, 0, bbox_vertex_count);
+            glEnable(GL_DEPTH_TEST);
 
             glfwSwapBuffers(window);
         }
