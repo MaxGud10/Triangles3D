@@ -18,12 +18,14 @@
 #include "VAO.hpp"
 #include "VBO.hpp"
 #include "camera.hpp"
+#include "glfw_wrapper.hpp"
+#include "glew_init.hpp"
 
 namespace triag_viewer
 {
-static constexpr uint32_t screen_width  = 1000;
-static constexpr uint32_t screen_height = 800;
-static constexpr const char* screen_name = "TRIANGLES VISUALIZER";
+static constexpr uint32_t    screen_width  = 1000;
+static constexpr uint32_t    screen_height = 800;
+static constexpr const char *screen_name   = "TRIANGLES VISUALIZER";
 
 struct TriangleRaw
 {
@@ -32,40 +34,38 @@ struct TriangleRaw
     glm::vec3 c;
 };
 
-static std::vector<TriangleRaw> to_raw(const std::vector<triangle::ShapeWithId<double>>& shapes)
+static std::vector<TriangleRaw> to_raw(const std::vector<triangle::ShapeWithId<double>> &shapes)
 {
     std::vector<TriangleRaw> tris;
     tris.reserve(shapes.size());
 
-    for (const auto& s : shapes)
+    for (const auto &s : shapes)
     {
         if (auto t = std::get_if<triangle::Triangle<double>>(&s.shape))
         {
             TriangleRaw r;
+
             r.a = glm::vec3((float)t->get_a().x, (float)t->get_a().y, (float)t->get_a().z);
             r.b = glm::vec3((float)t->get_b().x, (float)t->get_b().y, (float)t->get_b().z);
             r.c = glm::vec3((float)t->get_c().x, (float)t->get_c().y, (float)t->get_c().z);
+
             tris.push_back(r);
-        }
-        else
-        {
-            
         }
     }
 
     return tris;
 }
 
-static void build_vertex_buffer(const std::vector<TriangleRaw>& triangles,
-                                const std::unordered_set<size_t>& intersected_ids,
-                                std::vector<float>& vertices)
+static void build_vertex_buffer(const std::vector<TriangleRaw>   &triangles,
+                                const std::unordered_set<size_t> &intersected_ids,
+                                std::vector<float>               &vertices)
 {
     vertices.clear();
     vertices.reserve(triangles.size() * 3 * 9);
 
     for (size_t i = 0; i < triangles.size(); ++i)
     {
-        const auto& tri = triangles[i];
+        const auto &tri = triangles[i];
 
         const glm::vec3 A = tri.a;
         const glm::vec3 B = tri.b;
@@ -75,14 +75,19 @@ static void build_vertex_buffer(const std::vector<TriangleRaw>& triangles,
         const glm::vec3 v2 = C - A;
 
         glm::vec3 normal = glm::cross(v1, v2);
-        const float len = glm::length(normal);
-        if (len > 0.0f) normal /= len;
-        else normal = glm::vec3(0.0f, 0.0f, 1.0f);
+        const float len  = glm::length(normal);
+
+        if (len > 0.0f)
+            normal /= len;
+        else
+            normal = glm::vec3(0.0f, 0.0f, 1.0f);
 
         float r = 0.1f, g = 0.2f, b = 0.9f; // blue
         if (intersected_ids.contains(i))
         {
-            r = 0.9f; g = 0.1f; b = 0.1f;   // red
+            r = 0.9f;
+            g = 0.1f;
+            b = 0.1f; // red
         }
 
         auto pushV = [&](const glm::vec3& p)
@@ -112,7 +117,7 @@ struct SceneBounds
     glm::vec3 max;
 };
 
-static SceneBounds compute_scene_bounds(const std::vector<TriangleRaw>& triangles)
+static SceneBounds compute_scene_bounds(const std::vector<TriangleRaw> &triangles)
 {
     SceneBounds b;
     b.min = glm::vec3( std::numeric_limits<float>::infinity());
@@ -145,10 +150,10 @@ static SceneBounds compute_scene_bounds(const std::vector<TriangleRaw>& triangle
     return b;
 }
 
-static void build_bbox_lines_vertices(const SceneBounds& b,
-                                      std::vector<float>& out_vertices,
-                                      const glm::vec3& color,
-                                      float padding = 0.0f)
+static void build_bbox_lines_vertices(const SceneBounds    &b,
+                                        std::vector<float> &out_vertices,
+                                        const glm::vec3    &color,
+                                        float               padding = 0.0f)
 {
     out_vertices.clear();
 
@@ -202,48 +207,41 @@ static void build_bbox_lines_vertices(const SceneBounds& b,
     push_edge(v010, v011);
 }
 
-int run_opengl_viewer(const std::vector<triangle::ShapeWithId<double>>& shapes,
-                      const std::unordered_set<size_t>& intersected_ids)
+int run_opengl_viewer(const std::vector<triangle::ShapeWithId<double>> &shapes,
+                      const std::unordered_set<size_t>                 &intersected_ids)
 {
     const auto triangles = to_raw(shapes);
 
     std::vector<float> vertices;
     build_vertex_buffer(triangles, intersected_ids, vertices);
+
     if (vertices.empty())
         throw std::runtime_error("No triangle vertices to draw");
 
-    SceneBounds bounds = compute_scene_bounds(triangles);
+    const SceneBounds bounds = compute_scene_bounds(triangles);
 
     std::vector<float> bbox_vertices;
-    build_bbox_lines_vertices(bounds, bbox_vertices, glm::vec3(0.2f, 0.6f, 1.0f), 0.0f);
+    build_bbox_lines_vertices(bounds,
+                              bbox_vertices,
+                              glm::vec3(0.2f, 0.6f, 1.0f),
+                              0.0f);
 
-    if (!glfwInit())
-        throw std::runtime_error("Failed to init GLFW");
+    GlfwContext glfw;
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-    GLFWwindow* window = glfwCreateWindow(screen_width, screen_height, screen_name, nullptr, nullptr);
-    if (!window)
-    {
-        glfwTerminate();
-        throw std::runtime_error("Failed to create window");
-    }
+    GlfwWindow window(screen_width, screen_height, screen_name);
+    window.make_current();
 
-    glfwMakeContextCurrent(window);
+    init_glew_or_throw();
 
-    glewExperimental = GL_TRUE;
-    if (glewInit() != GLEW_OK)
-    {
-        glfwDestroyWindow(window);
-        glfwTerminate();
-        throw std::runtime_error("Failed to init GLEW");
-    }
+    int width  = 0;
+    int height = 0;
 
-    int width = 0, height = 0;
-    glfwGetFramebufferSize(window, &width, &height);
+    glfwGetFramebufferSize(window.get(), &width, &height);
     glViewport(0, 0, width, height);
 
     glEnable(GL_DEPTH_TEST);
@@ -253,7 +251,9 @@ int run_opengl_viewer(const std::vector<triangle::ShapeWithId<double>>& shapes,
     VAO vao;
     vao.bind();
 
-    VBO vbo(vertices.data(), static_cast<GLsizeiptr>(vertices.size() * sizeof(float)));
+    VBO vbo(vertices.data(),
+            static_cast<GLsizeiptr>(vertices.size() * sizeof(float)));
+
     vao.LinkAttrib(vbo, 0, 3, GL_FLOAT, 9 * sizeof(float), (void*)0);
     vao.LinkAttrib(vbo, 1, 3, GL_FLOAT, 9 * sizeof(float), (void*)(3 * sizeof(float)));
     vao.LinkAttrib(vbo, 2, 3, GL_FLOAT, 9 * sizeof(float), (void*)(6 * sizeof(float)));
@@ -264,7 +264,9 @@ int run_opengl_viewer(const std::vector<triangle::ShapeWithId<double>>& shapes,
     VAO bbox_vao;
     bbox_vao.bind();
 
-    VBO bbox_vbo(bbox_vertices.data(), static_cast<GLsizeiptr>(bbox_vertices.size() * sizeof(float)));
+    VBO bbox_vbo(bbox_vertices.data(),
+                    static_cast<GLsizeiptr>(bbox_vertices.size() * sizeof(float)));
+
     bbox_vao.LinkAttrib(bbox_vbo, 0, 3, GL_FLOAT, 9 * sizeof(float), (void*)0);
     bbox_vao.LinkAttrib(bbox_vbo, 1, 3, GL_FLOAT, 9 * sizeof(float), (void*)(3 * sizeof(float)));
     bbox_vao.LinkAttrib(bbox_vbo, 2, 3, GL_FLOAT, 9 * sizeof(float), (void*)(6 * sizeof(float)));
@@ -274,7 +276,7 @@ int run_opengl_viewer(const std::vector<triangle::ShapeWithId<double>>& shapes,
 
     Camera camera(width, height, glm::vec3(0.0f, 0.0f, 5.0f));
 
-    while (!glfwWindowShouldClose(window))
+    while (!window.should_close())
     {
         glfwPollEvents();
 
@@ -284,7 +286,7 @@ int run_opengl_viewer(const std::vector<triangle::ShapeWithId<double>>& shapes,
         shaderProgram.Activate();
         glUniform3f(glGetUniformLocation(shaderProgram.id(), "lightPos"), 5.0f, 5.0f, 5.0f);
 
-        camera.Inputs(window);
+        camera.Inputs(window.get());
         camera.SetMatrix(45.0f, 0.1f, 100.0f, shaderProgram, "camMatrix");
 
         vao.bind();
@@ -297,11 +299,9 @@ int run_opengl_viewer(const std::vector<triangle::ShapeWithId<double>>& shapes,
         glDrawArrays(GL_LINES, 0, bbox_vertex_count);
         glEnable(GL_DEPTH_TEST);
 
-        glfwSwapBuffers(window);
+        window.swap_buffers();
     }
 
-    glfwDestroyWindow(window);
-    glfwTerminate();
     return 0;
 }
 

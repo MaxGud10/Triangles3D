@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-inline std::string read_text_file(const char* filename)
+inline std::string read_text_file(const char *filename)
 {
     std::ifstream in(filename, std::ios::binary);
     if (!in.is_open())
@@ -50,13 +50,13 @@ inline std::string program_info_log(GLuint program)
     return log;
 }
 
-inline GLuint compile_shader(GLenum type, const char* src, const char* debug_name)
+inline GLuint compile_shader(GLenum type, const char *src, const char *debug_name)
 {
     GLuint shader = glCreateShader(type);
     if (shader == 0)
         throw std::runtime_error("glCreateShader failed");
 
-    glShaderSource(shader, 1, &src, nullptr);
+    glShaderSource (shader, 1, &src, nullptr);
     glCompileShader(shader);
 
     GLint ok = GL_FALSE;
@@ -87,13 +87,13 @@ class Shader
     }
 
 public:
-    Shader(const char* vertexFile, const char* fragmentFile)
+    Shader(const char *vertexFile, const char *fragmentFile)
     {
         const std::string vertexCode   = read_text_file(vertexFile);
         const std::string fragmentCode = read_text_file(fragmentFile);
 
-        const char* vsrc = vertexCode.c_str();
-        const char* fsrc = fragmentCode.c_str();
+        const char *vsrc = vertexCode.c_str();
+        const char *fsrc = fragmentCode.c_str();
 
         GLuint vs = 0;
         GLuint fs = 0;
@@ -109,7 +109,7 @@ public:
 
             glAttachShader(id_, vs);
             glAttachShader(id_, fs);
-            glLinkProgram(id_);
+            glLinkProgram (id_);
 
             GLint ok = GL_FALSE;
             glGetProgramiv(id_, GL_LINK_STATUS, &ok);
@@ -133,12 +133,12 @@ public:
     ~Shader() noexcept { reset(); }
 
     Shader(const Shader&)            = delete;
-    Shader& operator=(const Shader&) = delete;
+    Shader &operator=(const Shader&) = delete;
 
-    Shader(Shader&& other) noexcept
+    Shader(Shader &&other) noexcept
         : id_(std::exchange(other.id_, 0)) {}
 
-    Shader& operator=(Shader&& other) noexcept
+    Shader &operator=(Shader&& other) noexcept
     {
         if (this != &other)
         {

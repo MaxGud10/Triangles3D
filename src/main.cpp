@@ -13,16 +13,15 @@ int main(int argc, char** argv)
 {
     try
     {
-        bool use_opengl = false;
-        const char* input_file = nullptr;
+        bool        use_opengl = false;
+        const char *input_file = nullptr;
 
         for (int i = 1; i < argc; ++i)
         {
             std::string a = argv[i];
             if (a == "--opengl")
-            {
                 use_opengl = true;
-            }
+
             else if (a == "--help" || a == "-h")
             {
                 std::cout
@@ -34,13 +33,11 @@ int main(int argc, char** argv)
                 return 0;
             }
             else
-            {
                 input_file = argv[i];
-            }
         }
 
         std::unique_ptr<std::ifstream> fin;
-        std::istream* in = &std::cin;
+        std::istream *in = &std::cin;
 
         if (input_file)
         {
@@ -50,10 +47,11 @@ int main(int argc, char** argv)
                 std::cerr << "Failed to open file: " << input_file << "\n";
                 return 1;
             }
+
             in = fin.get();
         }
 
-        auto shapes = triag_core::read_shapes(*in);
+        auto shapes     = triag_core::read_shapes(*in);
         auto ids_sorted = triag_core::compute_intersected_ids_sorted(shapes);
 
         if (!use_opengl)

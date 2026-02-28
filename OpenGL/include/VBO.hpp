@@ -10,7 +10,7 @@ class VBO
 public:
     VBO() = default;
 
-    VBO(const void* data, GLsizeiptr  size, GLenum usage = GL_STATIC_DRAW)
+    VBO(const void *data, GLsizeiptr  size, GLenum usage = GL_STATIC_DRAW)
     {
         glGenBuffers(1, &id_);
         glBindBuffer(GL_ARRAY_BUFFER, id_);
@@ -20,12 +20,12 @@ public:
     ~VBO() noexcept {reset();}
 
     VBO(const VBO&)            = delete;
-    VBO& operator=(const VBO&) = delete;
+    VBO &operator=(const VBO&) = delete;
 
-    VBO(VBO&& other) noexcept
+    VBO(VBO &&other) noexcept
         : id_(std::exchange(other.id_, 0)) {}
 
-    VBO& operator=(VBO&& other) noexcept
+    VBO &operator=(VBO&& other) noexcept
     {
         if (this != &other)
         {
@@ -48,7 +48,7 @@ public:
         }
     }
 
-    void set_data(const void* data, GLsizeiptr size, GLenum usage = GL_STATIC_DRAW)
+    void set_data(const void *data, GLsizeiptr size, GLenum usage = GL_STATIC_DRAW)
     {
         if (id_ == 0)
             glGenBuffers(1, &id_);

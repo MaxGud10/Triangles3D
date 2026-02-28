@@ -20,7 +20,7 @@ class EBO
 public:
     EBO() = default;
 
-    EBO(const GLuint* indices, GLsizeiptr size)
+    EBO(const GLuint *indices, GLsizeiptr size)
     {
         glGenBuffers(1, &id_);
         if (id_ == 0)
@@ -33,12 +33,12 @@ public:
     ~EBO() noexcept { reset(); }
 
     EBO(const EBO&)            = delete;
-    EBO& operator=(const EBO&) = delete;
+    EBO &operator=(const EBO&) = delete;
 
-    EBO(EBO&& other) noexcept
+    EBO(EBO &&other) noexcept
         : id_(std::exchange(other.id_, 0)) {}
 
-    EBO& operator=(EBO&& other) noexcept
+    EBO &operator=(EBO &&other) noexcept
     {
         if (this != &other)
         {

@@ -25,18 +25,19 @@ public:
     ~VAO() noexcept {reset();}
 
     VAO(const VAO&)            = delete;
-    VAO& operator=(const VAO&) = delete;
+    VAO &operator=(const VAO&) = delete;
 
-    VAO(VAO&& other) noexcept
+    VAO(VAO &&other) noexcept
       : id_(std::exchange(other.id_, 0)) {}
 
-    VAO& operator=(VAO&& other) noexcept
+    VAO &operator=(VAO &&other) noexcept
     {
         if (this != &other)
         {
             reset();
             id_ = std::exchange(other.id_, 0);
         }
+
         return *this;
     }
 
@@ -45,12 +46,12 @@ public:
 
     GLuint id() const noexcept { return id_; }
 
-    void LinkAttrib(const VBO&  vbo,
+    void LinkAttrib(const VBO  &vbo,
                     GLuint      layout,
                     GLint       numComponents,
                     GLenum      type,
                     GLsizei     stride,
-                    const void* offset) const noexcept
+                    const void *offset) const noexcept
     {
         vbo.bind();
         glVertexAttribPointer(layout, numComponents, type, GL_FALSE, stride, offset);

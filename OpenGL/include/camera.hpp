@@ -42,9 +42,10 @@ class Camera
     void update_direction_from_angles() noexcept
     {
         glm::vec3 d;
-        d.x = std::cos(glm::radians(yaw_)) * std::cos(glm::radians(pitch_));
-        d.y = std::sin(glm::radians(pitch_));
-        d.z = std::sin(glm::radians(yaw_)) * std::cos(glm::radians(pitch_));
+        d.x  = std::cos(glm::radians(yaw_)) * std::cos(glm::radians(pitch_));
+        d.y  = std::sin(glm::radians(pitch_));
+        d.z  = std::sin(glm::radians(yaw_)) * std::cos(glm::radians(pitch_));
+
         dir_ = glm::normalize(d);
     }
 
@@ -60,11 +61,11 @@ public:
         height_ = std::max(1, height);
     }
 
-    const glm::vec3& position()  const noexcept { return pos_; }
-    const glm::vec3& direction() const noexcept { return dir_; }
+    const glm::vec3 &position()  const noexcept { return pos_; }
+    const glm::vec3 &direction() const noexcept { return dir_; }
 
     void SetMatrix(float fov_deg, float near_plane, float far_plane,
-                   const Shader& shader, const char* uniform) const
+                   const Shader &shader, const char *uniform) const
     {
         const glm::mat4 view = glm::lookAt(pos_, pos_ + dir_, up_);
 
