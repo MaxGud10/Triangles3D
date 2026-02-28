@@ -147,4 +147,15 @@ public:
             first_mouse_ = true;
         }
     }
+
+    void LookAt(const glm::vec3& target) noexcept
+    {
+        const glm::vec3 d = glm::normalize(target - pos_);
+        dir_ = d;
+
+        pitch_ = glm::degrees(std::asin(dir_.y));
+        yaw_   = glm::degrees(std::atan2(dir_.z, dir_.x));
+
+        pitch_ = clamp_pitch(pitch_);
+    }
 };

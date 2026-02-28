@@ -220,6 +220,19 @@ int run_opengl_viewer(const std::vector<triangle::ShapeWithId<double>> &shapes,
 
     const SceneBounds bounds = compute_scene_bounds(triangles);
 
+    const glm::vec3 center = (bounds.min + bounds.max) * 0.5f;
+    const glm::vec3 diag   = (bounds.max - bounds.min);
+    const float     radius = glm::length(diag) * 0.5f;
+
+    const float fov_deg = 45.0f;
+    const float fov_rad = glm::radians(fov_deg);
+          float dist    = radius / std::tan(fov_rad * 0.5f);
+
+    if (!std::isfinite(dist) || dist < 1.0f)
+        dist = 5.0f;
+
+    dist *= 0.6f;
+
     std::vector<float> bbox_vertices;
     build_bbox_lines_vertices(bounds,
                               bbox_vertices,
@@ -274,7 +287,11 @@ int run_opengl_viewer(const std::vector<triangle::ShapeWithId<double>> &shapes,
     VAO::unbind();
     VBO::unbind();
 
-    Camera camera(width, height, glm::vec3(0.0f, 0.0f, 5.0f));
+    Camera camera(width, height, center + glm::vec3(0.0f, 0.0f, dist));
+    camera.LookAt(center);
+
+    const float near_plane = std::max(0.01f, dist * 0.01f);
+    const float far_plane  = dist + radius * 4.0f + 10.0f;
 
     while (!window.should_close())
     {
@@ -287,7 +304,7 @@ int run_opengl_viewer(const std::vector<triangle::ShapeWithId<double>> &shapes,
         glUniform3f(glGetUniformLocation(shaderProgram.id(), "lightPos"), 5.0f, 5.0f, 5.0f);
 
         camera.Inputs(window.get());
-        camera.SetMatrix(45.0f, 0.1f, 100.0f, shaderProgram, "camMatrix");
+        camera.SetMatrix(45.0f, near_plane, far_plane, shaderProgram, "camMatrix");
 
         vao.bind();
         const GLsizei tri_vertex_count = static_cast<GLsizei>(vertices.size() / 9);

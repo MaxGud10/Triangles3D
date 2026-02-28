@@ -20,10 +20,10 @@ public:
     }
 
     GlfwContext(const GlfwContext&)            = delete;
-    GlfwContextoperator=(const GlfwContext&) = delete;
+    GlfwContext &operator=(const GlfwContext&) = delete;
 
     GlfwContext(GlfwContext&&)            = delete;
-    GlfwContext& operator=(GlfwContext&&) = delete;
+    GlfwContext &operator=(GlfwContext&&) = delete;
 };
 
 class GlfwWindow

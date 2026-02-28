@@ -150,26 +150,25 @@ cmake --build build/
 Запуск проекта:
 ```bash
 cd build/
-./opengl_viewer < tests/data/common/3.dat
+./triag --opengl < tests/data/common/3.dat
 ```
 
 
 ###### Структура проекта
 ```
-├── CMakeLists.txt
-├── include
-│   ├── camera.hpp
-│   ├── EBO.hpp
-│   ├── line.hpp
-│   ├── plane.hpp
-│   ├── shader.hpp
-│   ├── VAO.hpp
-│   ├── VBO.hpp
-│   └── vector.hpp
-└── shaders
-    ├── fragment.frag
-    └── vertex.vert
-
+└── OpenGL
+    ├── include
+    │   ├── camera.hpp
+    │   ├── EBO.hpp
+    │   ├── glew_init.hpp
+    │   ├── glfw_wrapper.hpp
+    │   ├── shader.hpp
+    │   ├── VAO.hpp
+    │   ├── VBO.hpp
+    │   └── viewer.hpp
+    └── shaders
+        ├── fragment.frag
+        └── vertex.vert
 ```
 
 `shader.hpp` - класс на C++ загрузки и компиляции шейдеров в OpenGL. Примеры шейдеров можно найти [здесь](./OpenGL/shaders/).
