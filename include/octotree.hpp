@@ -55,7 +55,7 @@ public:
         std::deque<ShapeWithId<PointTy>> &get_incell()       { return incell; }
   const std::deque<ShapeWithId<PointTy>> &get_incell() const { return incell; }
 
-  void group_intersections(std::map<size_t, size_t> &result)
+  void group_intersections(std::map<size_t, size_t> &result) const
   {
     for (auto one = incell.begin(); one != incell.end(); ++one)
     {
@@ -115,7 +115,7 @@ public:
   }
 
 
-  const std::deque<BoundingBox<PointTy>> &get_cells() { return cells; }
+  const std::deque<BoundingBox<PointTy>> &get_cells() const { return cells; }
 
   void divide_cell()
   {

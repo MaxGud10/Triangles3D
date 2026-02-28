@@ -153,6 +153,7 @@ cd build/
 ./opengl_viewer < tests/data/common/3.dat
 ```
 
+
 ###### Структура проекта
 ```
 ├── CMakeLists.txt
